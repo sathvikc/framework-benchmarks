@@ -1,11 +1,11 @@
-import { Component, Output, EventEmitter, Input, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="search-section">
       <form class="search-form" data-testid="search-form" (ngSubmit)="onSubmit()">
@@ -19,15 +19,18 @@ import { FormsModule } from '@angular/forms';
             placeholder="Enter city name..."
             data-testid="search-input"
             autocomplete="off"
+            [ngModel]="city()"
+            (ngModelChange)="city.set($event)"
+            name="city"
           />
           <button
             type="submit"
             class="search-button"
             data-testid="search-button"
-            [disabled]="isLoading"
+            [disabled]="isLoading()"
           >
             <span class="search-button__text">
-              {{ isLoading ? 'Loading...' : 'Get Weather' }}
+              {{ isLoading() ? 'Loading...' : 'Get Weather' }}
             </span>
             <span class="search-button__icon">🌦️</span>
           </button>
@@ -36,28 +39,19 @@ import { FormsModule } from '@angular/forms';
     </section>
   `
 })
-export class SearchFormComponent implements AfterViewInit {
-  @Input() isLoading = false;
-  @Output() search = new EventEmitter<string>();
-  @ViewChild('locationInput') locationInput!: ElementRef<HTMLInputElement>;
-
-  ngAfterViewInit(): void {
-    // Set initial value from localStorage
-    const savedLocation = this.getSavedLocation();
-    if (savedLocation) {
-      this.locationInput.nativeElement.value = savedLocation;
-    } else {
-      this.locationInput.nativeElement.value = 'London';
-    }
-  }
+export class SearchFormComponent {
+  readonly isLoading = input(false);
+  readonly search = output<string>();
+  readonly city = signal(this.getSavedLocation() ?? 'London');
 
   onSubmit(): void {
-    const city = this.locationInput.nativeElement.value?.trim();
+    const city = this.city().trim();
 
     if (!city) {
       return;
     }
 
+    this.city.set(city);
     this.search.emit(city);
   }
 

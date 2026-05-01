@@ -1,24 +1,24 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-error-state',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="error"
       data-testid="error"
-      [hidden]="!isVisible"
+      [hidden]="!isVisible()"
     >
       <h2 class="error__title">Unable to load weather data</h2>
       <p class="error__message">
-        {{ message || 'Please check the city name and try again.' }}
+        {{ message() || 'Please check the city name and try again.' }}
       </p>
     </div>
   `
 })
 export class ErrorStateComponent {
-  @Input() isVisible = false;
-  @Input() message: string | null = null;
+  readonly isVisible = input(false);
+  readonly message = input<string | null>(null);
 }

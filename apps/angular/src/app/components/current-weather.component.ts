@@ -1,33 +1,34 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { WeatherData } from '../types/weather.types';
 import { WeatherUtils } from '../utils/weather.utils';
 
 @Component({
   selector: 'app-current-weather',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="current-section" *ngIf="weatherData">
+    @if (weatherData(); as weatherData) {
+      <section class="current-section">
       <h2 class="section-title">Current Weather</h2>
       <div class="weather-card" data-testid="current-weather">
         <div class="current-weather">
           <h3 class="current-weather__location" data-testid="current-location">
-            {{ weatherData.locationName }}{{ weatherData.country ? ', ' + weatherData.country : '' }}
+            {{ locationLabel() }}
           </h3>
           <div class="current-weather__main">
             <div class="current-weather__icon" data-testid="current-icon">
-              {{ getWeatherIcon(weatherData.current.weather_code, weatherData.current.is_day) }}
+              {{ weatherIcon() }}
             </div>
             <div class="current-weather__temp-group">
               <div class="current-weather__temp" data-testid="current-temperature">
-                {{ formatTemperature(weatherData.current.temperature_2m) }}
+                {{ currentTemperature() }}
               </div>
               <div
-                class="current-weather__condition {{ getConditionClass(weatherData.current.weather_code) }}"
+                class="current-weather__condition {{ conditionClass() }}"
                 data-testid="current-condition"
               >
-                {{ getWeatherDescription(weatherData.current.weather_code) }}
+                {{ weatherDescription() }}
               </div>
             </div>
           </div>
@@ -36,54 +37,107 @@ import { WeatherUtils } from '../utils/weather.utils';
             <div class="weather-detail">
               <div class="weather-detail__label">Feels like</div>
               <div class="weather-detail__value" data-testid="feels-like">
-                {{ formatTemperature(weatherData.current.apparent_temperature) }}
+                {{ apparentTemperature() }}
               </div>
             </div>
             <div class="weather-detail">
               <div class="weather-detail__label">Humidity</div>
               <div class="weather-detail__value" data-testid="humidity">
-                {{ formatPercentage(weatherData.current.relative_humidity_2m) }}
+                {{ humidity() }}
               </div>
             </div>
             <div class="weather-detail">
               <div class="weather-detail__label">Wind Speed</div>
               <div class="weather-detail__value" data-testid="wind-speed">
-                {{ formatWindSpeed(weatherData.current.wind_speed_10m) }}
+                {{ windSpeed() }}
               </div>
             </div>
             <div class="weather-detail">
               <div class="weather-detail__label">Pressure</div>
               <div class="weather-detail__value" data-testid="pressure">
-                {{ formatPressure(weatherData.current.pressure_msl) }}
+                {{ pressure() }}
               </div>
             </div>
             <div class="weather-detail">
               <div class="weather-detail__label">Cloud Cover</div>
               <div class="weather-detail__value" data-testid="cloud-cover">
-                {{ formatPercentage(weatherData.current.cloud_cover) }}
+                {{ cloudCover() }}
               </div>
             </div>
             <div class="weather-detail">
               <div class="weather-detail__label">Wind Direction</div>
               <div class="weather-detail__value" data-testid="wind-direction">
-                {{ getWindDirection(weatherData.current.wind_direction_10m) }}
+                {{ windDirection() }}
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+      </section>
+    }
   `
 })
 export class CurrentWeatherComponent {
-  @Input() weatherData: WeatherData | null = null;
+  readonly weatherData = input<WeatherData | null>(null);
 
-  formatTemperature = WeatherUtils.formatTemperature;
-  formatPercentage = WeatherUtils.formatPercentage;
-  formatWindSpeed = WeatherUtils.formatWindSpeed;
-  formatPressure = WeatherUtils.formatPressure;
-  getWindDirection = WeatherUtils.getWindDirection;
-  getWeatherDescription = WeatherUtils.getWeatherDescription;
-  getWeatherIcon = WeatherUtils.getWeatherIcon;
-  getConditionClass = WeatherUtils.getConditionClass;
+  readonly locationLabel = computed(() => {
+    const weatherData = this.weatherData();
+    if (!weatherData) {
+      return '';
+    }
+
+    return weatherData.country
+      ? `${weatherData.locationName}, ${weatherData.country}`
+      : (weatherData.locationName ?? '');
+  });
+
+  readonly weatherIcon = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.getWeatherIcon(current.weather_code, current.is_day) : '';
+  });
+
+  readonly currentTemperature = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatTemperature(current.temperature_2m) : '';
+  });
+
+  readonly conditionClass = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.getConditionClass(current.weather_code) : '';
+  });
+
+  readonly weatherDescription = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.getWeatherDescription(current.weather_code) : '';
+  });
+
+  readonly apparentTemperature = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatTemperature(current.apparent_temperature) : '';
+  });
+
+  readonly humidity = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatPercentage(current.relative_humidity_2m) : '';
+  });
+
+  readonly windSpeed = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatWindSpeed(current.wind_speed_10m) : '';
+  });
+
+  readonly pressure = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatPressure(current.pressure_msl) : '';
+  });
+
+  readonly cloudCover = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.formatPercentage(current.cloud_cover) : '';
+  });
+
+  readonly windDirection = computed(() => {
+    const current = this.weatherData()?.current;
+    return current ? WeatherUtils.getWindDirection(current.wind_direction_10m) : '';
+  });
 }

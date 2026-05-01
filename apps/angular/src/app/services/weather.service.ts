@@ -97,7 +97,7 @@ export class WeatherService {
     const url = `${this.geocodingUrl}/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
 
     return this.http.get<{ results: GeocodingResult[] }>(url).pipe(
-      map(response => {
+      map((response: { results: GeocodingResult[] }) => {
         if (!response.results || response.results.length === 0) {
           throw new Error('Location not found');
         }
