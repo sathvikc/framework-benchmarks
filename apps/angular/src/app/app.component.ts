@@ -26,22 +26,24 @@ import { WeatherContentComponent } from './components/weather-content.component'
 
     <main class="main">
       <div class="container">
+        @let currentState = state();
+
         <app-search-form
-          [isLoading]="state().isLoading"
+          [isLoading]="currentState.isLoading"
           (search)="onSearch($event)"
         ></app-search-form>
 
         <div class="weather-container" data-testid="weather-container">
-          <app-loading-state [isVisible]="state().isLoading"></app-loading-state>
+          <app-loading-state [isVisible]="currentState.isLoading"></app-loading-state>
 
           <app-error-state
-            [isVisible]="!!state().error && !state().isLoading"
-            [message]="state().error"
+            [isVisible]="!!currentState.error && !currentState.isLoading"
+            [message]="currentState.error"
           ></app-error-state>
 
           <app-weather-content
-            [isVisible]="!!state().weatherData && !state().isLoading && !state().error"
-            [weatherData]="state().weatherData"
+            [isVisible]="!!currentState.weatherData && !currentState.isLoading && !currentState.error"
+            [weatherData]="currentState.weatherData"
           ></app-weather-content>
         </div>
       </div>

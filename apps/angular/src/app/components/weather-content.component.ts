@@ -14,9 +14,11 @@ import { ForecastComponent } from './forecast.component';
       data-testid="weather-content"
       [hidden]="!isVisible()"
     >
+      @let currentWeatherData = weatherData();
+
       <div class="weather-layout">
-        <app-current-weather [weatherData]="weatherData()"></app-current-weather>
-        <app-forecast [weatherData]="weatherData()"></app-forecast>
+        <app-current-weather [weatherData]="currentWeatherData"></app-current-weather>
+        <app-forecast [weatherData]="currentWeatherData"></app-forecast>
       </div>
     </div>
   `
