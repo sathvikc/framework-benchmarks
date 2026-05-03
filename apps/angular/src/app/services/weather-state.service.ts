@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, of } from 'rxjs';
+import { Injectable, signal } from '@angular/core';
+import { EMPTY, of } from 'rxjs';
 import { catchError, finalize, delay, switchMap } from 'rxjs/operators';
 import { WeatherService } from './weather.service';
 import { AppState } from '../types/weather.types';
@@ -8,21 +8,20 @@ import { AppState } from '../types/weather.types';
   providedIn: 'root'
 })
 export class WeatherStateService {
-  private stateSubject = new BehaviorSubject<AppState>({
+  private readonly stateSignal = signal<AppState>({
     weatherData: null,
     isLoading: false,
     error: null
   });
 
-  public state$ = this.stateSubject.asObservable();
+  readonly state = this.stateSignal.asReadonly();
 
   constructor(private weatherService: WeatherService) {
     this.initializeApp();
   }
 
   private updateState(updates: Partial<AppState>): void {
-    const currentState = this.stateSubject.value;
-    this.stateSubject.next({ ...currentState, ...updates });
+    this.stateSignal.update(currentState => ({ ...currentState, ...updates }));
   }
 
   loadWeather(city: string): void {

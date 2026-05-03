@@ -1,15 +1,15 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-loading-state',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="loading"
       data-testid="loading"
-      [hidden]="!isVisible"
+      [hidden]="!isVisible()"
     >
       <div class="loading__spinner"></div>
       <p>Loading weather data...</p>
@@ -17,5 +17,5 @@ import { CommonModule } from '@angular/common';
   `
 })
 export class LoadingStateComponent {
-  @Input() isVisible = false;
+  readonly isVisible = input(false);
 }
