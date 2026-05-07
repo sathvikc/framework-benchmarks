@@ -85,6 +85,13 @@ function createConfig(framework) {
         command: 'npm run dev:vanjs',
         url: 'http://localhost:3000/',
       }
+    },
+    'lume-js': {
+      baseURL: 'http://localhost:3000/?mock=true',
+      webServer: {
+        command: 'npm run dev:lume-js',
+        url: 'http://localhost:3000/',
+      }
     }
   };
 
