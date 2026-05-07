@@ -1,5 +1,5 @@
 import { state, bindDom } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/index.mjs';
-import { repeat } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/addons.mjs';
+import { repeat, computed } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/addons.mjs';
 import { show } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/handlers.mjs';
 
 import { WeatherService } from './weather-service.js';
@@ -9,6 +9,14 @@ import { WeatherUtils } from './weather-utils.js';
 const classNameHandler = {
   attr: 'data-classname',
   apply(el, val) { el.className = val || ''; }
+};
+
+// Custom handler: applies CSS transition value (e.g. 'opacity 0.2s ease')
+const transitionHandler = {
+  attr: 'data-transition',
+  apply(el, val) {
+    el.style.transition = val || '';
+  }
 };
 
 const store = state({
@@ -40,10 +48,14 @@ const store = state({
 
 const weatherService = new WeatherService();
 
+// Derived state: showWeather is true only when data is ready and no loading/error
+computed(() => store.hasData && !store.isLoading && !store.hasError)
+  .subscribe(val => { store.showWeather = val; });
+
 // Bind reactive data-* attributes to DOM
 bindDom(document.body, store, {
   immediate: true,
-  handlers: [show, classNameHandler],
+  handlers: [show, classNameHandler, transitionHandler],
 });
 
 // Forecast list rendered via repeat()
@@ -100,11 +112,13 @@ repeat('#forecast-list', store, 'forecast', {
 
     // Keep details visibility and active class in sync with activeForecastIndex.
     // Captures `index` from create — stable because forecast order never changes.
-    store.$subscribe('activeForecastIndex', activeIdx => {
+    const unsubscribeActive = store.$subscribe('activeForecastIndex', activeIdx => {
       const isActive = activeIdx === index;
       details.hidden = !isActive;
       el.classList.toggle('active', isActive);
     });
+    // Store cleanup so repeat's remove callback can dispose it
+    el._lumeCleanup = unsubscribeActive;
 
     const toggle = () => {
       const next = store.activeForecastIndex === index ? null : index;
@@ -118,6 +132,13 @@ repeat('#forecast-list', store, 'forecast', {
     el.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
     });
+  },
+
+  remove(item, el) {
+    if (el._lumeCleanup) {
+      el._lumeCleanup();
+      el._lumeCleanup = null;
+    }
   },
 
   update(item, el) {
@@ -144,21 +165,15 @@ document.getElementById('search-form').addEventListener('submit', e => {
 
 // --- State helpers ---
 
-function updateShowWeather() {
-  store.showWeather = store.hasData && !store.isLoading && !store.hasError;
-}
-
 function setLoading(loading) {
   store.isLoading = loading;
   store.buttonText = loading ? 'Loading...' : 'Get Weather';
-  updateShowWeather();
 }
 
 function showError(message) {
   store.hasError = true;
   store.hasData = false;
   store.errorMessage = message;
-  updateShowWeather();
 }
 
 function clearError() {
@@ -169,7 +184,6 @@ function clearError() {
 function showWeatherContent() {
   store.hasData = true;
   store.hasError = false;
-  updateShowWeather();
 }
 
 function saveLocation(city) {
