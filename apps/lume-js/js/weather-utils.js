@@ -114,15 +114,4 @@ export class WeatherUtils {
     return 'weather-condition-cloudy';
   }
 
-  static debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
 }
