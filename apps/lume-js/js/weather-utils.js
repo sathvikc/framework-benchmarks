@@ -1,4 +1,4 @@
-class WeatherUtils {
+export class WeatherUtils {
   static getWeatherDescription(weatherCode) {
     const weatherCodes = {
       0: 'Clear sky',

@@ -1,4 +1,9 @@
-const { state, bindDom, repeat, show } = window.Lume;
+import { state, bindDom } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/index.mjs';
+import { repeat } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/addons.mjs';
+import { show } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/handlers.mjs';
+
+import { WeatherService } from './weather-service.js';
+import { WeatherUtils } from './weather-utils.js';
 
 // Custom handler: sets el.className to the full class string
 const classNameHandler = {

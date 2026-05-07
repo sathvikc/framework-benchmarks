@@ -1,4 +1,4 @@
-class WeatherService {
+export class WeatherService {
   constructor() {
     this.baseUrl = 'https://api.open-meteo.com/v1';
     this.geocodingUrl = 'https://geocoding-api.open-meteo.com/v1';
