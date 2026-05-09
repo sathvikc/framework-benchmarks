@@ -17,7 +17,7 @@ npm run lint
 
 ## Implementation
 
-Lume.js is closest to Alpine in philosophy — HTML-first, no build step, minimal overhead. The implementation uses:
+Lume.js is a modern take on Knockout.js — state is defined in JavaScript and the HTML is a plain view bound to it. The key difference from Alpine is that state lives in JS (`state()`), not inline in HTML attributes. Even the binding attribute is the same: `data-bind`. What makes it modern: flat Proxy-based store instead of `ko.observable()` wrappers, microtask batching, and ESM/CDN distribution with no build step required. The implementation uses:
 
 - **`state()`** — flat reactive store holding all UI state
 - **`bindDom()`** — binds `data-bind`, `data-show`, `data-disabled`, and `data-class` (via `stringAttr('class')`) to DOM elements
