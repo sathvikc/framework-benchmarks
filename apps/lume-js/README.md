@@ -1,6 +1,6 @@
 # Weather App — Lume.js
 
-A minimal reactive weather application built with [Lume.js](https://github.com/sathvikc/lume-js) (~2.4 KB gzipped).
+A minimal reactive weather application built with [Lume.js](https://github.com/sathvikc/lume-js) (~5.58 KB gzipped, all-in-one).
 
 ## Usage
 
@@ -22,13 +22,42 @@ Lume.js is closest to Alpine in philosophy — HTML-first, no build step, minima
 - **`state()`** — flat reactive store holding all UI state
 - **`bindDom()`** — binds `data-bind`, `data-show`, `data-disabled`, and a custom `data-classname` handler to DOM elements
 - **`repeat()`** — keyed list rendering for the 7-day forecast (from `lume-js/addons`)
+- **`computed()`** — derives `showWeather` from `hasData`, `isLoading`, `hasError`
+- **`show`** handler — built-in handler for `data-show` visibility toggling
 
-All three are loaded via ESM CDN in `<script type="module">` — no node_modules, no bundler.
+This benchmark app uses the **CDN Global (IIFE)** build — a single `<script defer>` tag, no ES module syntax required.
 
+```html
+<script defer src="https://cdn.jsdelivr.net/npm/lume-js/dist/lume.global.js"></script>
+<script>
+  const { state, bindDom, computed, repeat, show } = window.Lume;
+</script>
+```
+
+## All Supported Import Patterns
+
+**npm (tree-shakeable ESM):**
 ```js
-import { state, bindDom } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/index.mjs';
-import { repeat } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/addons.mjs';
-import { show } from 'https://cdn.jsdelivr.net/npm/lume-js@2.0.1/dist/handlers.mjs';
+import { state, bindDom, effect, isReactive } from 'lume-js';
+import { computed, watch, repeat, debug } from 'lume-js/addons';
+import { show, classToggle, boolAttr } from 'lume-js/handlers';
+```
+
+**CDN ESM (module script, tree-shakeable):**
+```html
+<script type="module">
+  import { state, bindDom } from 'https://cdn.jsdelivr.net/npm/lume-js/dist/index.min.mjs';
+  import { computed, repeat } from 'https://cdn.jsdelivr.net/npm/lume-js/dist/addons.min.mjs';
+  import { show } from 'https://cdn.jsdelivr.net/npm/lume-js/dist/handlers.min.mjs';
+</script>
+```
+
+**CDN Global (IIFE, all-in-one, what this benchmark uses):**
+```html
+<script defer src="https://cdn.jsdelivr.net/npm/lume-js/dist/lume.global.js"></script>
+<script>
+  const { state, bindDom, computed, repeat, show } = window.Lume;
+</script>
 ```
 
 ## Real-world example
