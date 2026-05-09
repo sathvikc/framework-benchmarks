@@ -54,6 +54,7 @@ So, without further ado, let's see how every framework weathers the storm! ⛈�
     <a href="https://framework-benchmarks.as93.net/lit/"><img width="48" src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" /></a>
     <a href="https://framework-benchmarks.as93.net/vanjs/"><img width="48" src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" /></a>
     <a href="https://framework-benchmarks.as93.net/vanilla/"><img width="48" src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/javascript.png" /></a>
+    <a href="https://framework-benchmarks.as93.net/lume-js/"><img width="48" src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" /></a>
 <br><sub>Click a framework to view info, test/lint/build/etc statuses, and to preview the demo app</sub></p>
 <!-- end_framework_list -->
 
@@ -194,6 +195,7 @@ and also view a stats on a per-framework basis.
 | <a href="https://github.com/alpinejs/alpine"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/alpine.png" alt="🏔️" width="16"></a> [**Alpine.js**](https://github.com/alpinejs/alpine) | 31.6k | 2.1M | 8.8 MB | 316 | 6.5y | 1 week ago | MIT |
 | <a href="https://github.com/lit/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" alt="🔥" width="16"></a> [**Lit**](https://github.com/lit/lit) | 21.6k | 23.3M | 60.8 MB | 210 | 8.9y | 4 days ago | BSD-3-Clause |
 | <a href="https://github.com/vanjs-org/van"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" alt="🚐" width="16"></a> [**VanJS**](https://github.com/vanjs-org/van) | 4.4k | 7.1k | 3.8 MB | 24 | 3.0y | 3 months ago | MIT |
+| <a href="https://github.com/sathvikc/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" alt="💡" width="16"></a> [**Lume.js**](https://github.com/sathvikc/lume-js) | 39 | 524 | 0.4 MB | 1 | 0.6y | today | MIT |
 <!-- end_framework_stats -->
 
 ---
@@ -251,6 +253,7 @@ Each app gets built and tested to ensure that it is functional, compliant with t
 | <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" width="16" /> Lit</a> | ![Lit Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-lit.svg) | ![Lit Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-lit.svg) | ![Lit Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-lit.svg) |
 | <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanjs"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" width="16" /> VanJS</a> | ![VanJS Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-vanjs.svg) | ![VanJS Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-vanjs.svg) | ![VanJS Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-vanjs.svg) |
 | <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanilla"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/javascript.png" width="16" /> Vanilla JavaScript</a> | ![Vanilla JavaScript Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-vanilla.svg) | ![Vanilla JavaScript Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-vanilla.svg) | ![Vanilla JavaScript Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-vanilla.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" width="16" /> Lume.js</a> | ![Lume.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-lume-js.svg) | ![Lume.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-lume-js.svg) | ![Lume.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-lume-js.svg) |
 <!-- end_all_status -->
 
 ---
