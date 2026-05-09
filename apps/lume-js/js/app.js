@@ -1,10 +1,5 @@
 // Lume.js Weather App — requires lume.global.js, weather-utils.js, weather-service.js loaded first.
-const { state, bindDom, repeat, computed, show } = window.Lume;
-
-const classNameHandler = {
-  attr: 'data-classname',
-  apply(el, val) { el.className = val || ''; },
-};
+const { state, bindDom, repeat, effect, show, stringAttr } = window.Lume;
 
 const store = state({
   searchQuery: '',
@@ -31,10 +26,9 @@ const store = state({
 
 const weatherService = new WeatherService();
 
-computed(() => store.hasData && !store.isLoading && !store.hasError)
-  .subscribe(val => { store.showWeather = val; });
+effect(() => { store.showWeather = store.hasData && !store.isLoading && !store.hasError; });
 
-bindDom(document.body, store, { immediate: true, handlers: [show, classNameHandler] });
+bindDom(document.body, store, { immediate: true, handlers: [show, stringAttr('class')] });
 
 repeat('#forecast-list', store, 'forecast', {
   key: item => item.day,

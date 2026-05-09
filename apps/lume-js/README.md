@@ -20,10 +20,11 @@ npm run lint
 Lume.js is closest to Alpine in philosophy — HTML-first, no build step, minimal overhead. The implementation uses:
 
 - **`state()`** — flat reactive store holding all UI state
-- **`bindDom()`** — binds `data-bind`, `data-show`, `data-disabled`, and a custom `data-classname` handler to DOM elements
+- **`bindDom()`** — binds `data-bind`, `data-show`, `data-disabled`, and `data-class` (via `stringAttr('class')`) to DOM elements
 - **`repeat()`** — keyed list rendering for the 7-day forecast (from `lume-js/addons`)
-- **`computed()`** — derives `showWeather` from `hasData`, `isLoading`, `hasError`
+- **`effect()`** — derives `showWeather` from `hasData`, `isLoading`, `hasError` via auto-tracked reactive effect
 - **`show`** handler — built-in handler for `data-show` visibility toggling
+- **`stringAttr('class')`** handler — sets full `className` from state via `data-class` attribute
 
 This benchmark app uses the **CDN Global (IIFE)** build — a single `<script defer>` tag, no ES module syntax required.
 
