@@ -21,7 +21,7 @@ const store = state({
   cloudCover: '',
   windDirection: '',
   forecast: [],
-  activeForecastIndex: null,
+  activeForecastIndex: null
 });
 
 const weatherService = new WeatherService();
@@ -72,7 +72,7 @@ repeat('#forecast-list', store, 'forecast', {
     const toggle = () => {
       const next = store.activeForecastIndex === index ? null : index;
       store.activeForecastIndex = next;
-      if (next === index) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+      if (next === index) {setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);}
     };
 
     el.addEventListener('click', toggle);
@@ -94,7 +94,7 @@ repeat('#forecast-list', store, 'forecast', {
     el.querySelector('[data-detail="uvIndex"]').textContent = item.uvIndex;
     el.querySelector('[data-detail="precipitation"]').textContent = item.precipitation;
     el.querySelector('[data-detail="tempRange"]').textContent = item.tempRange;
-  },
+  }
 });
 
 document.getElementById('search-form').addEventListener('submit', e => { e.preventDefault(); handleSearch(); });
@@ -129,7 +129,7 @@ function processWeatherData(weatherData) {
     rain: `${daily.rain_sum[i]?.toFixed(1) || 0} mm`,
     uvIndex: daily.uv_index_max[i]?.toFixed(1) || 0,
     precipitation: WeatherUtils.formatPercentage(daily.precipitation_probability_max[i] || 0),
-    tempRange: `${WeatherUtils.formatTemperature(daily.temperature_2m_min[i])} to ${WeatherUtils.formatTemperature(daily.temperature_2m_max[i])}`,
+    tempRange: `${WeatherUtils.formatTemperature(daily.temperature_2m_min[i])} to ${WeatherUtils.formatTemperature(daily.temperature_2m_max[i])}`
   }));
 }
 
@@ -141,18 +141,18 @@ async function loadWeather(city) {
     setLoading(true);
     store.hasError = false;
     const weatherData = await weatherService.getWeatherByCity(city);
-    if (seq !== _loadSeq) return;
-    try { localStorage.setItem('weather-app-location', city); } catch {}
+    if (seq !== _loadSeq) {return;}
+    try { localStorage.setItem('weather-app-location', city); } catch { /* storage unavailable */ }
     processWeatherData(weatherData);
     store.hasData = true;
     store.hasError = false;
   } catch (error) {
-    if (seq !== _loadSeq) return;
+    if (seq !== _loadSeq) {return;}
     store.hasError = true;
     store.hasData = false;
     store.errorMessage = error.message;
   } finally {
-    if (seq === _loadSeq) setLoading(false);
+    if (seq === _loadSeq) {setLoading(false);}
   }
 }
 
@@ -167,12 +167,12 @@ async function init() {
   try {
     const saved = localStorage.getItem('weather-app-location');
     if (saved) { store.searchQuery = saved; await loadWeather(saved); return; }
-  } catch {}
+  } catch { /* ignore read errors */ }
 
   if (!isHeadless) {
     try {
       await new Promise((resolve, reject) => {
-        if (!navigator.geolocation) { reject(); return; }
+        if (!navigator.geolocation) { reject(new Error('Geolocation not available')); return; }
         navigator.geolocation.getCurrentPosition(async pos => {
           try {
             setLoading(true);
@@ -186,7 +186,7 @@ async function init() {
         }, reject, { timeout: 10000, enableHighAccuracy: false, maximumAge: 300000 });
       });
       return;
-    } catch {}
+    } catch { /* ignore geolocation errors */ }
   }
 
   if (_loadSeq === 0) { store.searchQuery = 'London'; await loadWeather('London'); }

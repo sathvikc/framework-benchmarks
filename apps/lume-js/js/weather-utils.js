@@ -12,28 +12,28 @@ class WeatherUtils {
       77: 'Snow grains',
       80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers',
       85: 'Slight snow showers', 86: 'Heavy snow showers',
-      95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail',
+      95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail'
     };
     return weatherCodes[weatherCode] || 'Unknown';
   }
 
   static getWeatherIcon(weatherCode, isDay = true) {
-    if (weatherCode === 0) return isDay ? '☀️' : '🌙';
-    if (weatherCode <= 3) return isDay ? '⛅' : '☁️';
-    if (weatherCode <= 48) return '🌫️';
-    if (weatherCode <= 57 || (weatherCode >= 80 && weatherCode <= 82)) return '🌧️';
-    if (weatherCode >= 61 && weatherCode <= 67) return '🌧️';
-    if (weatherCode >= 71 && weatherCode <= 77) return '❄️';
-    if (weatherCode >= 85 && weatherCode <= 86) return '🌨️';
-    if (weatherCode >= 95) return '⛈️';
+    if (weatherCode === 0) {return isDay ? '☀️' : '🌙';}
+    if (weatherCode <= 3) {return isDay ? '⛅' : '☁️';}
+    if (weatherCode <= 48) {return '🌫️';}
+    if (weatherCode <= 57 || (weatherCode >= 80 && weatherCode <= 82)) {return '🌧️';}
+    if (weatherCode >= 61 && weatherCode <= 67) {return '🌧️';}
+    if (weatherCode >= 71 && weatherCode <= 77) {return '❄️';}
+    if (weatherCode >= 85 && weatherCode <= 86) {return '🌨️';}
+    if (weatherCode >= 95) {return '⛈️';}
     return '🌤️';
   }
 
   static getConditionClass(weatherCode) {
-    if (weatherCode === 0) return 'weather-condition-sunny';
-    if (weatherCode <= 3) return 'weather-condition-cloudy';
-    if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82)) return 'weather-condition-rainy';
-    if (weatherCode >= 95) return 'weather-condition-stormy';
+    if (weatherCode === 0) {return 'weather-condition-sunny';}
+    if (weatherCode <= 3) {return 'weather-condition-cloudy';}
+    if ((weatherCode >= 51 && weatherCode <= 67) || (weatherCode >= 80 && weatherCode <= 82)) {return 'weather-condition-rainy';}
+    if (weatherCode >= 95) {return 'weather-condition-stormy';}
     return 'weather-condition-cloudy';
   }
 
@@ -52,8 +52,8 @@ class WeatherUtils {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1);
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    if (date.toDateString() === today.toDateString()) {return 'Today';}
+    if (date.toDateString() === tomorrow.toDateString()) {return 'Tomorrow';}
     return date.toLocaleDateString('en-US', { weekday: 'long' });
   }
 
