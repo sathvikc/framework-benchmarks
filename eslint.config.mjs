@@ -7,7 +7,7 @@ export default [
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       sourceType: 'module',
       parserOptions: {
         ecmaFeatures: {
@@ -55,6 +55,8 @@ export default [
         MutationObserver: 'readonly',
         ResizeObserver: 'readonly',
         IntersectionObserver: 'readonly',
+        CustomEvent: 'readonly',
+        customElements: 'readonly',
       },
     },
     rules: {

@@ -4,7 +4,6 @@ import { designSystemStyles, baseStyles, componentStyles } from './shared-styles
 import './weather-forecast.js';
 
 export class WeatherDisplay extends LitElement {
-  // eslint-disable-next-line
   static styles = [
     designSystemStyles,
     baseStyles,
@@ -16,7 +15,6 @@ export class WeatherDisplay extends LitElement {
     `
   ];
 
-  // eslint-disable-next-line
   static properties = {
     weatherData: { type: Object },
     isLoading: { type: Boolean },
@@ -68,7 +66,7 @@ export class WeatherDisplay extends LitElement {
 
   _renderWeatherContent() {
     const { current, locationName, country } = this.weatherData;
-    
+
     return html`
       <div class="weather-content" data-testid="weather-content">
         <div class="weather-layout">
