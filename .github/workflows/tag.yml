@@ -195,7 +195,7 @@ jobs:
             echo "package.json already at $NEW_VERSION, nothing to commit"
             echo "bumped=false" >> "$GITHUB_OUTPUT"
           else
-            git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
+            git commit -m "chore: bump version to $NEW_VERSION"
             git push origin HEAD:main
             echo "bumped=true" >> "$GITHUB_OUTPUT"
             echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
