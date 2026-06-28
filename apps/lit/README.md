@@ -109,7 +109,7 @@ But Lit really does shine for design systems and component libraries where you n
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Lit app. So, checkout:
 
-<a href="https://github.com/Lissy93/email-comparison"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-logos/email-comparison.png" width="96"></a>
+<a href="https://github.com/Lissy93/email-comparison"><img align="left" src="https://pixelflare.cc/alicia/logo/email-comparison/w256" width="96"></a>
 
 > **Email Comparison** - _An objective comparison of privacy-respecting email providers_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/email-comparison](https://github.com/Lissy93/email-comparison)<br>

@@ -110,7 +110,7 @@ The trade-off is developer complexity - all those `$` symbols take getting used 
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Qwik app. So, checkout:
 
-<a href="https://github.com/Lissy93/personal-security-checklist"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-logos/digital-defense.png" width="96"></a>
+<a href="https://github.com/Lissy93/personal-security-checklist"><img align="left" src="https://pixelflare.cc/alicia/logo/digital-defense/w256" width="96"></a>
 
 > **Digital Defense** - _Interactive personal security checklist_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/personal-security-checklist](https://github.com/Lissy93/personal-security-checklist)<br>

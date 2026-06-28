@@ -2,7 +2,7 @@ import { renderToStream, type RenderToStreamOptions } from '@builder.io/qwik/ser
 import Root from './root';
 import { getWeatherByCity } from './services/WeatherService';
 
-export default async function (opts: RenderToStreamOptions) {
+export default async function(opts: RenderToStreamOptions) {
   let initialWeatherData = null;
   try {
     initialWeatherData = await getWeatherByCity('London');
@@ -15,7 +15,7 @@ export default async function (opts: RenderToStreamOptions) {
     ...opts,
     containerAttributes: {
       lang: 'en-us',
-      ...opts.containerAttributes,
-    },
+      ...opts.containerAttributes
+    }
   });
 }

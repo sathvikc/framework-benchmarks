@@ -5,7 +5,6 @@ import './weather-search.js';
 import './weather-display.js';
 
 export class WeatherApp extends LitElement {
-  // eslint-disable-next-line
   static styles = [
     designSystemStyles,
     baseStyles,
@@ -23,7 +22,6 @@ export class WeatherApp extends LitElement {
     `
   ];
 
-  // eslint-disable-next-line
   static properties = {
     _searchQuery: { state: true },
     _isLoading: { state: true },
@@ -100,7 +98,7 @@ export class WeatherApp extends LitElement {
     try {
       this._setLoading(true);
       this._clearError();
-      
+
       this._weatherData = await this._weatherService.getWeatherByCity(city);
       this._saveLocation(city);
       this._showWeatherContent();
@@ -142,16 +140,16 @@ export class WeatherApp extends LitElement {
       }
 
       navigator.geolocation.getCurrentPosition(
-        async (position) => {
+        async(position) => {
           try {
             this._setLoading(true);
             this._clearError();
-            
+
             const { latitude, longitude } = position.coords;
             this._weatherData = await this._weatherService.getWeatherData(latitude, longitude);
             this._weatherData.locationName = 'Current Location';
             this._searchQuery = 'Current Location';
-            
+
             this._showWeatherContent();
             resolve();
           } catch (error) {

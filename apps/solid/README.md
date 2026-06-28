@@ -110,7 +110,7 @@ The JSX looks familiar, but `<Show>` and `<For>` components replace your typical
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Solid.js app. So, checkout:
 
-<a href="https://github.com/Lissy93/cso"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-logos/cso.png" width="96"></a>
+<a href="https://github.com/Lissy93/cso"><img align="left" src="https://pixelflare.cc/alicia/logo/cso/w256" width="96"></a>
 
 > **Chief Snack Officer** - _Office snack management app_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/cso](https://github.com/Lissy93/cso)<br>

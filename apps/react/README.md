@@ -111,7 +111,7 @@ React really shines for complex applications where the ecosystem matters. We did
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a React app. So, checkout:
 
-<a href="https://github.com/Lissy93/web-check"><img align="left" src="https://raw.githubusercontent.com/Lissy93/web-check/master/public/android-chrome-192x192.png" width="96"></a>
+<a href="https://github.com/Lissy93/web-check"><img align="left" src="https://pixelflare.cc/alicia/logo/web-check/w256" width="96"></a>
 
 > **Web Check** - _All-in-one OSINT tool for analyzing any site_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/web-check](https://github.com/Lissy93/web-check)<br>

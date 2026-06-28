@@ -110,7 +110,7 @@ For simple interactive websites, Alpine hits the sweet spot. You get modern reac
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Alpine.js app. So, checkout:
 
-<a href="https://github.com/Lissy93/who-dat"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-logos/who-dat.png" width="96"></a>
+<a href="https://github.com/Lissy93/who-dat"><img align="left" src="https://pixelflare.cc/alicia/logo/who-dat/w256" width="96"></a>
 
 > **Who Dat** - _WHOIS lookup for domain registration info_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/who-dat](https://github.com/Lissy93/who-dat)<br>

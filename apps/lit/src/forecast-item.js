@@ -3,7 +3,6 @@ import { WeatherUtils } from './weather-utils.js';
 import { designSystemStyles, baseStyles, componentStyles } from './shared-styles.js';
 
 export class ForecastItem extends LitElement {
-  // eslint-disable-next-line
   static styles = [
     designSystemStyles,
     baseStyles,
@@ -15,7 +14,6 @@ export class ForecastItem extends LitElement {
     `
   ];
 
-  // eslint-disable-next-line
   static properties = {
     forecastData: { type: Object },
     index: { type: Number },
@@ -32,7 +30,7 @@ export class ForecastItem extends LitElement {
   }
 
   render() {
-    if (!this.forecastData) return html``;
+    if (!this.forecastData) {return html``;}
 
     const { daily, index } = this;
     const dayName = WeatherUtils.formatDate(daily.time[index]);
@@ -134,7 +132,7 @@ export class ForecastItem extends LitElement {
 
   updated(changedProperties) {
     super.updated(changedProperties);
-    
+
     if (changedProperties.has('active') && this.active) {
       // Smooth scroll to the expanded item
       setTimeout(() => {

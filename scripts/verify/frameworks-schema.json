@@ -14,7 +14,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[a-z]+$",
+            "pattern": "^[a-z-]+$",
             "description": "Unique lowercase identifier for the framework"
           },
           "name": {
@@ -28,7 +28,7 @@
           },
           "dir": {
             "type": "string",
-            "pattern": "^[a-z]+$",
+            "pattern": "^[a-z-]+$",
             "description": "Directory name in apps/ folder"
           },
           "assetsDir": {
@@ -78,7 +78,7 @@
           },
           "meta": {
             "type": "object",
-            "required": ["emoji", "iconName", "website", "docs", "github", "color", "accentColor", "logo", "description", "longDescription", "video"],
+            "required": ["emoji", "iconName", "website", "docs", "github", "color", "accentColor", "logo", "description", "longDescription"],
             "properties": {
               "emoji": {
                 "type": "string",
@@ -89,6 +89,11 @@
                 "type": "string",
                 "minLength": 1,
                 "description": "Icon name from Simple Icons"
+              },
+              "iconUrl": {
+                "type": "string",
+                "pattern": "^(https?://.+|)$",
+                "description": "Custom icon URL, overrides Simple Icons when set"
               },
               "website": {
                 "type": "string",

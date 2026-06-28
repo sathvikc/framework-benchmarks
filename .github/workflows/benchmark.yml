@@ -35,6 +35,9 @@ env:
   NODE_VERSION: '20'
   PYTHON_VERSION: '3.11'
 
+permissions:
+  contents: read
+
 jobs:
   benchmark:
     name: Run Framework Benchmarks
@@ -43,18 +46,19 @@ jobs:
     
     steps:
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 1
+          persist-credentials: false
 
       - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: 🐍 Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
@@ -86,15 +90,17 @@ jobs:
           sudo apt-get install -y libasound2t64 || sudo apt-get install -y libasound2
 
       - name: 🌐 Install Google Chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@c785b87e244131f27c9f19c1a33e2ead956ab7ce # v1
         with:
           chrome-version: stable
         id: setup-chrome
 
       - name: 📋 Verify Chrome Installation
+        env:
+          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: |
-          echo "Chrome path: ${{ steps.setup-chrome.outputs.chrome-path }}"
-          ${{ steps.setup-chrome.outputs.chrome-path }} --version
+          echo "Chrome path: $CHROME_PATH"
+          "$CHROME_PATH" --version
           which google-chrome || which chromium-browser || echo "Chrome executable not found in PATH"
 
       - name: 🔧 Setup Project
@@ -162,38 +168,47 @@ jobs:
           echo "✅ Project verification complete"
 
       - name: 🔧 Prepare Benchmark Environment
+        env:
+          COMMIT_TO_MAIN_INPUT: ${{ github.event.inputs.commit_to_main || 'false' }}
+          BENCHMARK_TYPES_INPUT: ${{ github.event.inputs.benchmark_types || 'all' }}
+          FRAMEWORKS_INPUT: ${{ github.event.inputs.frameworks || 'all' }}
+          EXECUTIONS_INPUT: ${{ github.event.inputs.executions || '1' }}
         run: |
-          echo "PYTHONPATH=$PWD:$PWD/scripts" >> $GITHUB_ENV
-          
+          echo "PYTHONPATH=$PWD:$PWD/scripts" >> "$GITHUB_ENV"
+
           # Set commit behavior based on event type or manual input
           if [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "COMMIT_TO_MAIN=false" >> $GITHUB_ENV
+            echo "COMMIT_TO_MAIN=false" >> "$GITHUB_ENV"
             echo "⏰ Scheduled run - will skip main branch commit"
-            echo "SCHEDULED_RUN=true" >> $GITHUB_ENV
+            echo "SCHEDULED_RUN=true" >> "$GITHUB_ENV"
           else
-            echo "COMMIT_TO_MAIN=${{ github.event.inputs.commit_to_main || 'false' }}" >> $GITHUB_ENV
-            echo "👤 Manual run - commit to main: ${{ github.event.inputs.commit_to_main || 'false' }}"
-            echo "SCHEDULED_RUN=false" >> $GITHUB_ENV
+            echo "COMMIT_TO_MAIN=$COMMIT_TO_MAIN_INPUT" >> "$GITHUB_ENV"
+            echo "👤 Manual run - commit to main: $COMMIT_TO_MAIN_INPUT"
+            echo "SCHEDULED_RUN=false" >> "$GITHUB_ENV"
           fi
-          
+
           echo "📊 Benchmark Configuration:"
-          if [ "${{ env.SCHEDULED_RUN }}" = "true" ]; then
+          if [ "$SCHEDULED_RUN" = "true" ]; then
             echo "  Types: lighthouse,bundle-size,source-analysis,build-time,dev-server,resource-usage (scheduled)"
             echo "  Frameworks: all (scheduled)"
             echo "  Executions: 5 (scheduled)"
           else
-            echo "  Types: ${{ github.event.inputs.benchmark_types || 'all' }}"
-            echo "  Frameworks: ${{ github.event.inputs.frameworks || 'all' }}"
-            echo "  Executions: ${{ github.event.inputs.executions || '1' }}"
+            echo "  Types: $BENCHMARK_TYPES_INPUT"
+            echo "  Frameworks: $FRAMEWORKS_INPUT"
+            echo "  Executions: $EXECUTIONS_INPUT"
           fi
-          echo "  Commit to Main: ${{ env.COMMIT_TO_MAIN }}"
+          echo "  Commit to Main: $COMMIT_TO_MAIN"
 
       - name: 🧪 Run Benchmarks
+        env:
+          BENCHMARK_TYPES_INPUT: ${{ github.event.inputs.benchmark_types }}
+          FRAMEWORKS_INPUT: ${{ github.event.inputs.frameworks }}
+          EXECUTIONS_INPUT: ${{ github.event.inputs.executions }}
         run: |
           set -e  # Exit on error
-          
+
           # Configure parameters based on trigger type
-          if [ "${{ env.SCHEDULED_RUN }}" = "true" ]; then
+          if [ "$SCHEDULED_RUN" = "true" ]; then
             # Scheduled run: comprehensive benchmarks
             benchmark_types="lighthouse,bundle-size,source-analysis,build-time,dev-server,resource-usage"
             frameworks=""  # All frameworks
@@ -201,9 +216,9 @@ jobs:
             echo "⏰ Scheduled run configuration: all benchmarks, all frameworks, 5 executions"
           else
             # Manual run: use provided inputs
-            benchmark_types="${{ github.event.inputs.benchmark_types }}"
-            frameworks="${{ github.event.inputs.frameworks }}"
-            executions="${{ github.event.inputs.executions }}"
+            benchmark_types="$BENCHMARK_TYPES_INPUT"
+            frameworks="$FRAMEWORKS_INPUT"
+            executions="$EXECUTIONS_INPUT"
           fi
           
           # Build command arguments for the benchmark script
@@ -260,36 +275,42 @@ jobs:
       - name: 📊 Generate Benchmark Summary
         if: always()
         run: |
-          echo "## 📊 Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Run Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## 📊 Benchmark Results Summary"
+            echo ""
+            echo "- **Run Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          } >> "$GITHUB_STEP_SUMMARY"
           
           # Check if benchmarks ran successfully
           if [ -d "benchmark-results" ] && [ "$(find benchmark-results -name "*.json" -type f | wc -l)" -gt 0 ]; then
             result_count=$(find benchmark-results -name "*.json" -type f | wc -l)
             latest_dir=$(find benchmark-results -mindepth 1 -maxdepth 1 -type d | sort -r | head -1)
             
-            echo "- **Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
-            echo "- **Results Generated**: $result_count files" >> $GITHUB_STEP_SUMMARY
-            echo "- **Artifacts**: Available for download below" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "- **Status**: ✅ Success"
+              echo "- **Results Generated**: $result_count files"
+              echo "- **Artifacts**: Available for download below"
+            } >> "$GITHUB_STEP_SUMMARY"
             
             if [ -n "$latest_dir" ]; then
-              echo "- **Latest Results**: $(basename "$latest_dir")" >> $GITHUB_STEP_SUMMARY
+              echo "- **Latest Results**: $(basename "$latest_dir")" >> "$GITHUB_STEP_SUMMARY"
             fi
           else
-            echo "- **Status**: ❌ Failed" >> $GITHUB_STEP_SUMMARY
-            echo "- **Reason**: Benchmarks did not complete successfully" >> $GITHUB_STEP_SUMMARY
-            echo "- **Check**: Review the workflow logs for error details" >> $GITHUB_STEP_SUMMARY
-            echo "- **Artifacts**: Debug logs may be available below (if any)" >> $GITHUB_STEP_SUMMARY
+            {
+              echo "- **Status**: ❌ Failed"
+              echo "- **Reason**: Benchmarks did not complete successfully"
+              echo "- **Check**: Review the workflow logs for error details"
+              echo "- **Artifacts**: Debug logs may be available below (if any)"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: 📋 Save Workflow Context
         run: |
-          echo '{"commit_to_main": "${{ env.COMMIT_TO_MAIN }}"}' > workflow-context.json
+          echo "{\"commit_to_main\": \"${COMMIT_TO_MAIN}\"}" > workflow-context.json
           cat workflow-context.json
 
       - name: 📤 Upload Benchmark Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: benchmark-results-${{ github.run_number }}
@@ -301,7 +322,7 @@ jobs:
           compression-level: 6
 
       - name: 📤 Upload Detailed Logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: failure()
         with:
           name: benchmark-logs-${{ github.run_number }}

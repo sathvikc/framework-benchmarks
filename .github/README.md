@@ -1,6 +1,6 @@
 <h1 align="center">🌈 Framework Benchmarks</h1>
 <p align="center">
-	<i>The same weather app built in 10 different frontend frameworks</i><br>
+	<i>The same weather app built in 12 different frontend frameworks</i><br>
     For automated cross-framework web performance benchmarking
   <br>
 	<a href="https://framework-benchmarks.as93.net"><img width="96" src="https://storage.googleapis.com/as93-screenshots/project-logos/framework-benchmarks.png" /></a><br>
@@ -9,7 +9,7 @@
 </p>
 
 ### Intro
-I've built the same weather app in 10 different frontend web frameworks.
+I've built the same weather app in 12 different frontend web frameworks.
 Along with automated scripts to benchmark each of their performance, quality and capabilities.
 To finally answer the age-old question: "Which is the _best_* frontend framework?"<br>
 So, without further ado, let's see how every framework weathers the storm! ⛈️
@@ -29,12 +29,15 @@ So, without further ado, let's see how every framework weathers the storm! ⛈�
 - [Frameworks Covered](#frameworks-covered)
 - [Usage Guide](#usage)
 - [Project Outline](#project-outline)
-- [Requirement Spec](#requirement-spec)
-- [Benchmarking](#benchmarking)
 - [Results](#results)
 - [Real-world Applications](#side-note)
 - [Status](#status)
+- [Requirement Spec](#requirement-spec)
 - [Attributions and License](#attributions)
+
+> [!TIP]
+> Choosing a framework for your next project? I've also built Stack Match, a comparison tool to help you pick the right framework based on your requirements.
+> Check it out at [stack-match.as93.net](https://stack-match.as93.net/) :)
 
 ---
 
@@ -64,8 +67,7 @@ So, without further ado, let's see how every framework weathers the storm! ⛈�
 
 ### Prerequisites
 
-You'll need to ensure you've got
-Git, Node (LTS or v22+), Python (3.10) and uv installed
+You'll need to ensure you've got Git, Node (v22+) and Python (3.10+) installed
 
 ### Setup
 
@@ -90,15 +92,18 @@ You should also verify the lint checks pass, with `npm run lint` or `npm run lin
 
 ### Deploying
 Build the app for production, with `npm run build:[app-name]`<br>
-Then upload `./apps/[app-name]/dist/` to any web server, CDN or static hosting provider
+Then upload the app's build output (`dist/`, `build/` or the app root, depending on the framework) to any web server, CDN or static hosting provider
+
 
 ### Adding a Framework
-1. Create app directory: `apps/your-framework/` with `package.json`, `vite.config.js`, and a `src/` dir
-2. Build your app (ensuring it meets the [requirements spec](#requirement-spec) above)
-3. Update [`frameworks.json`](https://github.com/lissy93/framework-benchmarks/blob/main/frameworks.json)
-4. Add a test config file in `tests/config/`
-6. Them run `node scripts/setup/generate-scripts.js` and `node scripts/setup/sync-assets.js`
-
+1. Create app directory: `apps/[app-name]/` with `package.json`, a build config (e.g. `vite.config.js`), and a `src/` dir
+2. Register the framework in [`frameworks.json`](https://github.com/lissy93/framework-benchmarks/blob/main/frameworks.json)
+3. Add a test config at `tests/config/playwright-[app-name].config.js`
+4. Run `npm run setup` to generate scripts, sync shared assets and mocks, and install deps. Verify with `npm run check`
+5. Code your app!<br>
+  5.1. Preview locally with `npm run dev:[app-name]`<br>
+  5.2. then test with `npm run test:[app-name]` to ensure it meets the [requirements spec](#requirement-spec)
+6. Validate everything passes with the test, lint and build scripts
 
 ---
 
@@ -113,6 +118,7 @@ framework-benchmarks
 │   ├── icons				# SVG icons, used by all apps
 │   ├── styles			# CSS classes and variables, used by all apps
 │   └── mocks				# Mocked data, used by apps when running benchmarks
+├── website					# Source templates for the results website
 ├── tests						# Test suit
 └── apps						# Directory for each app as a standalone project
     ├── react/
@@ -126,7 +132,6 @@ The **[`scripts/`](https://github.com/lissy93/framework-benchmarks/tree/main/scr
 everything for managing the project (setup, testing, benchmarking, reporting, etc).
 You can view a list of scripts by running `npm run help`.
 
-
 ### Shared Assets
 To keep things uniform, all apps will share certain assets
 
@@ -138,7 +143,6 @@ To keep things uniform, all apps will share certain assets
 - **Dependencies**: Beyond their framework code, none of the apps use any additional dependencies, libraries or third-party "stuff"
 - **Data**: Apps support using real weather data, from [open-meteo api](https://open-meteo.com). However, to keep tests fair, we use mocked data when running benchmarks.
 
-
 ### Commands
 
 - `npm run setup` - Creates mock data, syncs assets, updates scripts and installs dependencies
@@ -149,9 +153,9 @@ To keep things uniform, all apps will share certain assets
 - `npm run start` - Starts the demo server, which serves up all built apps
 - `npm run help` - Displays a list of all available commands
 
-See the [`package.json`](https://github.com/lissy93/framework-benchmarks/blob/main/package.json) for all commands
+See the [`package.json`](https://github.com/lissy93/framework-benchmarks/blob/main/package.json) for all commands, and `npm run help` for details.
 
-Note that the project commands get generated automatically by the [`generate_scripts.py`](https://github.com/lissy93/framework-benchmarks/blob/main/scripts/setup/generate_scripts.py) script, based on the contents of [`frameworks.json`](https://github.com/lissy93/framework-benchmarks/blob/main/frameworks.json) and [`config.json`](https://github.com/lissy93/framework-benchmarks/blob/main/config.json).
+Note that the project commands get generated automatically by the [`generate_scripts.py`](https://github.com/lissy93/framework-benchmarks/blob/main/scripts/setup/generate_scripts.py) script, based on the contents of [`frameworks.json`](https://github.com/lissy93/framework-benchmarks/blob/main/frameworks.json) and [`config.json`](https://github.com/lissy93/framework-benchmarks/blob/main/config.json). That's what `npm run setup` is for.
 
 ---
 
@@ -167,15 +171,15 @@ and also view a stats on a per-framework basis.
 <p align="center"><sub>The following charts show live data from the latest benchmark run. See the web version for interactive charts.</sub></p>
 <!-- start_summary_charts -->
 <p align="center">
-  <img src="https://quickchart.io/chart/render/zf-e48bac43-9b8a-4a11-8d32-b60b4e8fce3d" width="256" title="Performance Overview" alt="Performance Overview" />
-  <img src="https://quickchart.io/chart/render/zf-f467319d-aafb-4413-98b0-5e7cd60f792c" width="256" title="Performance vs Bundle Size" alt="Performance vs Bundle Size" />
-  <img src="https://quickchart.io/chart/render/zf-347ed8d8-5aea-4c00-a62d-a27a4862bd6b" width="256" title="Source Code Analysis" alt="Source Code Analysis" />
-  <img src="https://quickchart.io/chart/render/zf-58e40347-a501-42c5-b2a8-1be15d96a591" width="256" title="Bundle Size and Comparison" alt="Bundle Size and Comparison" />
-  <img src="https://quickchart.io/chart/render/zf-d2e25911-42f9-4b7f-b2a7-ff8445f72fcd" width="256" title="Lighthouse Performance Scores" alt="Lighthouse Performance Scores" />
-  <img src="https://quickchart.io/chart/render/zf-9c0ccdd8-abf3-4501-9351-c171e9626e03" width="256" title="Loading Performance" alt="Loading Performance" />
-  <img src="https://quickchart.io/chart/render/zf-7d49983d-8c96-4c3a-8899-b527dd2f2bdf" width="256" title="Project Size Distribution" alt="Project Size Distribution" />
-  <img src="https://quickchart.io/chart/render/zf-02f645c9-4022-43bf-8bf9-479d5e700ec8" width="256" title="Development Server Performance" alt="Development Server Performance" />
-  <img src="https://quickchart.io/chart/render/zf-a492cbdd-9fb6-4d2b-9312-f95c60aee6f0" width="256" title="Build Time Distribution" alt="Build Time Distribution" />
+  <img src="https://quickchart.io/chart/render/zf-a687d0f9-524f-42e2-b45e-2afbdf448674" width="256" title="Performance Overview" alt="Performance Overview" />
+  <img src="https://quickchart.io/chart/render/zf-4143fcae-88e3-43df-b1b1-b7205644ce19" width="256" title="Performance vs Bundle Size" alt="Performance vs Bundle Size" />
+  <img src="https://quickchart.io/chart/render/zf-fea6e4d7-9bad-4da6-8174-f9bc1e422438" width="256" title="Source Code Analysis" alt="Source Code Analysis" />
+  <img src="https://quickchart.io/chart/render/zf-564d5ac4-e17b-4daf-a556-76e6f24c47ff" width="256" title="Bundle Size and Comparison" alt="Bundle Size and Comparison" />
+  <img src="https://quickchart.io/chart/render/zf-972b7d7a-a98c-4dc7-b188-ebc265008175" width="256" title="Lighthouse Performance Scores" alt="Lighthouse Performance Scores" />
+  <img src="https://quickchart.io/chart/render/zf-963a26d3-71a5-4058-9f3d-26a05989c59c" width="256" title="Loading Performance" alt="Loading Performance" />
+  <img src="https://quickchart.io/chart/render/zf-ddf26200-7b3e-4fc4-a769-d9c2a655d2ea" width="256" title="Project Size Distribution" alt="Project Size Distribution" />
+  <img src="https://quickchart.io/chart/render/zf-e106fa94-282b-4a9e-b165-920231976fb9" width="256" title="Development Server Performance" alt="Development Server Performance" />
+  <img src="https://quickchart.io/chart/render/zf-7718f6fe-df54-4f2a-a512-3beb928c9fec" width="256" title="Build Time Distribution" alt="Build Time Distribution" />
 </p>
 <!-- end_summary_charts -->
 
@@ -184,40 +188,40 @@ and also view a stats on a per-framework basis.
 <!-- start_framework_stats -->
 | Framework | Stars | Downloads | Size | Contributors | Age | Last updated | License |
 |---|---|---|---|---|---|---|---|
-| <a href="https://github.com/facebook/react"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/react.png" alt="⚛️" width="16"></a> [**React**](https://github.com/facebook/react) | 245.7k | 570.3M | 970.2 MB | 2k | 13.0y | 1 day ago | MIT |
-| <a href="https://github.com/angular/angular"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/angular.png" alt="🅰️" width="16"></a> [**Angular**](https://github.com/angular/angular) | 100.3k | 23.4M | 624.7 MB | 2.6k | 11.7y | 1 day ago | MIT |
-| <a href="https://github.com/sveltejs/svelte"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/svelte.png" alt="🔥" width="16"></a> [**Svelte**](https://github.com/sveltejs/svelte) | 87.1k | 20.4M | 118.4 MB | 930 | 9.6y | 1 day ago | MIT |
-| <a href="https://github.com/preactjs/preact"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/preact.png" alt="💜" width="16"></a> [**Preact**](https://github.com/preactjs/preact) | 38.7k | 86.8M | 18.7 MB | 371 | 10.7y | 4 days ago | MIT |
-| <a href="https://github.com/solidjs/solid"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/solid.png" alt="🚀" width="16"></a> [**Solid.js**](https://github.com/solidjs/solid) | 35.6k | 10.7M | 16.7 MB | 189 | 8.1y | 2 weeks ago | MIT |
-| <a href="https://github.com/QwikDev/qwik"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/qwik.png" alt="⚡" width="16"></a> [**Qwik**](https://github.com/QwikDev/qwik) | 22k | 125.4k | 74.0 MB | 635 | 5.3y | 4 days ago | MIT |
-| <a href="https://github.com/vuejs/core"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vue.png" alt="💚" width="16"></a> [**Vue 3**](https://github.com/vuejs/core) | 53.8k | 54.1M | 41.9 MB | 622 | 7.7y | 1 day ago | MIT |
-| <a href="https://github.com/jquery/jquery"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/jquery.png" alt="💙" width="16"></a> [**jQuery**](https://github.com/jquery/jquery) | 59.8k | 79.9M | 35.2 MB | 348 | 20.2y | 5 days ago | MIT |
-| <a href="https://github.com/alpinejs/alpine"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/alpine.png" alt="🏔️" width="16"></a> [**Alpine.js**](https://github.com/alpinejs/alpine) | 31.6k | 2.3M | 8.8 MB | 316 | 6.5y | 4 weeks ago | MIT |
-| <a href="https://github.com/lit/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" alt="🔥" width="16"></a> [**Lit**](https://github.com/lit/lit) | 21.7k | 25.4M | 60.7 MB | 210 | 8.9y | 3 weeks ago | BSD-3-Clause |
-| <a href="https://github.com/vanjs-org/van"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" alt="🚐" width="16"></a> [**VanJS**](https://github.com/vanjs-org/van) | 4.4k | 8.2k | 3.8 MB | 24 | 3.1y | 3 months ago | MIT |
-| <a href="https://github.com/sathvikc/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" alt="💡" width="16"></a> [**Lume.js**](https://github.com/sathvikc/lume-js) | 38 | 1.1k | 1.0 MB | 1 | 0.7y | 3 weeks ago | MIT |
+| <a href="https://github.com/facebook/react"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/react.png" alt="⚛️" width="16"></a> [**React**](https://github.com/facebook/react) | 246.2k | 582M | 976.6 MB | 2k | 13.1y | 1 day ago | MIT |
+| <a href="https://github.com/angular/angular"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/angular.png" alt="🅰️" width="16"></a> [**Angular**](https://github.com/angular/angular) | 100.5k | 23.7M | 628.9 MB | 2.6k | 11.8y | 2 days ago | MIT |
+| <a href="https://github.com/sveltejs/svelte"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/svelte.png" alt="🔥" width="16"></a> [**Svelte**](https://github.com/sveltejs/svelte) | 87.5k | 20.4M | 118.4 MB | 931 | 9.6y | 4 days ago | MIT |
+| <a href="https://github.com/preactjs/preact"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/preact.png" alt="💜" width="16"></a> [**Preact**](https://github.com/preactjs/preact) | 38.7k | 91.9M | 18.8 MB | 372 | 10.8y | 1 day ago | MIT |
+| <a href="https://github.com/solidjs/solid"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/solid.png" alt="🚀" width="16"></a> [**Solid.js**](https://github.com/solidjs/solid) | 35.7k | 10.9M | 16.9 MB | 189 | 8.2y | 1 month ago | MIT |
+| <a href="https://github.com/QwikDev/qwik"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/qwik.png" alt="⚡" width="16"></a> [**Qwik**](https://github.com/QwikDev/qwik) | 22k | 133.2k | 83.9 MB | 637 | 5.4y | 1 day ago | MIT |
+| <a href="https://github.com/vuejs/core"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vue.png" alt="💚" width="16"></a> [**Vue 3**](https://github.com/vuejs/core) | 53.9k | 54.2M | 42.0 MB | 627 | 7.8y | 2 days ago | MIT |
+| <a href="https://github.com/jquery/jquery"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/jquery.png" alt="💙" width="16"></a> [**jQuery**](https://github.com/jquery/jquery) | 59.8k | 74.4M | 35.1 MB | 348 | 20.3y | 1 week ago | MIT |
+| <a href="https://github.com/alpinejs/alpine"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/alpine.png" alt="🏔️" width="16"></a> [**Alpine.js**](https://github.com/alpinejs/alpine) | 31.7k | 2.3M | 9.3 MB | 317 | 6.6y | 20 hours ago | MIT |
+| <a href="https://github.com/lit/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" alt="🔥" width="16"></a> [**Lit**](https://github.com/lit/lit) | 21.7k | 25.1M | 61.1 MB | 210 | 9.0y | 4 days ago | BSD-3-Clause |
+| <a href="https://github.com/vanjs-org/van"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" alt="🚐" width="16"></a> [**VanJS**](https://github.com/vanjs-org/van) | 4.4k | 7.9k | 3.8 MB | 24 | 3.1y | 4 months ago | MIT |
+| <a href="https://github.com/sathvikc/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" alt="💡" width="16"></a> [**Lume.js**](https://github.com/sathvikc/lume-js) | 38 | 160 | 1.3 MB | 1 | 0.7y | 1 month ago | MIT |
 <!-- end_framework_stats -->
 
 ---
 
 ## Side note
 Different frameworks shine in different ways, and therefore have very different usecases.<br>
-So, in order to let each one shine, I have I have built real-world apps in each framework.
+So to properly demonstrate each frameworks ideal usecase, I've also built a real-world app in each framework.
 
 
 | Project | Framework | GitHub | Website |
 |---|---|---|---|
-| [<img src="https://raw.githubusercontent.com/Lissy93/web-check/master/public/android-chrome-192x192.png" width="18" /> Web Check](https://github.com/Lissy93/web-check) - All-in-one OSINT tool for analyzing any site | [![React](https://img.shields.io/static/v1?label=&message=React&color=61DAFB&logo=react&logoColor=FFFFFF)](https://react.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/web-check)](https://github.com/Lissy93/web-check) | [🌐 web-check.xyz](https://web-check.xyz) |
-| [<img src="https://i.ibb.co/yhbt6CY/dashy.png" width="18" /> Dashy](https://github.com/Lissy93/dashy) - Highly configurable self-hostable server dashboard | [![Vue.js](https://img.shields.io/static/v1?label=&message=Vue.js&color=4FC08D&logo=vuedotjs&logoColor=FFFFFF)](https://vuejs.org/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/dashy)](https://github.com/Lissy93/dashy) | [🌐 dashy.to](https://dashy.to) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/digital-defense.png" width="18" /> Digital Defense](https://github.com/Lissy93/personal-security-checklist) - Interactive personal security checklist | [![Qwik](https://img.shields.io/static/v1?label=&message=Qwik&color=ac7ef4&logo=qwik&logoColor=FFFFFF)](https://qwik.builder.io/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/personal-security-checklist)](https://github.com/Lissy93/personal-security-checklist) | [🌐 digital-defense.io](https://digital-defense.io) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/portainer-templates.png" width="18" /> Portainer Templates](https://github.com/Lissy93/portainer-templates) - Automated Docker deployment specs | [![Svelte](https://img.shields.io/static/v1?label=&message=Svelte&color=ff3e00&logo=svelte&logoColor=FFFFFF)](https://svelte.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/portainer-templates)](https://github.com/Lissy93/portainer-templates) | [🌐 portainer-templates](https://portainer-templates.as93.net/) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/domain-locker.png" width="18" /> Domain Locker](https://github.com/Lissy93/domain-locker) - Domain name portfolio manager | [![Angular](https://img.shields.io/static/v1?label=&message=Angular&color=DD0031&logo=angular&logoColor=FFFFFF)](https://angular.io/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/domain-locker)](https://github.com/Lissy93/domain-locker) | [🌐 domain-locker.com](https://domain-locker.com) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/email-comparison.png" width="18" /> Email Comparison](https://github.com/Lissy93/email-comparison) - Objective testing of mail providers | [![Lit](https://img.shields.io/static/v1?label=&message=Lit&color=00ffff&logo=lit&logoColor=FFFFFF)](https://lit.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/email-comparison)](https://github.com/Lissy93/email-comparison) | [🌐 email-comparison](https://email-comparison.as93.net/) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/who-dat.png" width="18" /> Who Dat](https://github.com/Lissy93/who-dat) - WHOIS lookup for domain registration info  | [![Alpine.js](https://img.shields.io/static/v1?label=&message=Alpine.js&color=8BC0D0&logo=alpinedotjs&logoColor=FFFFFF)](https://alpinejs.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/who-dat)](https://github.com/Lissy93/who-dat) | [🌐 who-dat.as93.net](https://who-dat.as93.net) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/cso.png" width="18" /> Chief Snack Officer](https://github.com/Lissy93/cso) - Office snack management app | [![Solid](https://img.shields.io/static/v1?label=&message=Solid&color=2C4F7C&logo=solid&logoColor=FFFFFF)](https://www.solidjs.com/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/cso)](https://github.com/Lissy93/cso) | [🌐 N/A](https://lissy93.github.io/cso) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-logos/awesome-privacy.png" width="18" /> Awesome Privacy](https://github.com/Lissy93/awesome-privacy) - Curated directory of respectful apps | [![Astro](https://img.shields.io/static/v1?label=&message=Astro&color=E83CB9&logo=astro&logoColor=FFFFFF)](https://astro.build/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/awesome-privacy)](https://github.com/Lissy93/awesome-privacy) | [🌐 awesome-privacy.xyz](https://awesome-privacy.xyz/) |
-| [<img src="https://storage.googleapis.com/as93-screenshots/project-screenshots/raid-caclularor.png" width="18" /> RAID Calculator](https://github.com/Lissy93/raid-calculator) - RAID array capacity and fault tolerance | [![Van.js](https://img.shields.io/static/v1?label=&message=Van.js&color=F44336&logo=vitess&logoColor=FFFFFF)](https://vanjs.org/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/raid-calculator)](https://github.com/Lissy93/raid-calculator) | [🌐 raid-calculator](https://raid-calculator.as93.net/) |
-| [<img src="https://github.com/Lissy93/permissionator/blob/main/public/logo.png?raw=true" width="18" /> Permissionator](https://github.com/Lissy93/permissionator) - Generating Linux file permissions | [![Marko](https://img.shields.io/static/v1?label=&message=Marko&color=2596BE&logo=marko&logoColor=FFFFFF)](https://markojs.com/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/permissionator)](https://github.com/Lissy93/permissionator) | [🌐 permissionator](https://permissionator.as93.net) |
+| [<img src="https://pixelflare.cc/alicia/logo/web-check/w256" width="18" /> Web Check](https://github.com/Lissy93/web-check) - All-in-one OSINT tool for analyzing any site | [![React](https://img.shields.io/static/v1?label=&message=React&color=61DAFB&logo=react&logoColor=FFFFFF)](https://react.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/web-check)](https://github.com/Lissy93/web-check) | [🌐 web-check.xyz](https://web-check.xyz) |
+| [<img src="https://pixelflare.cc/alicia/logo/dashy/w256" width="18" /> Dashy](https://github.com/Lissy93/dashy) - Highly configurable self-hostable server dashboard | [![Vue.js](https://img.shields.io/static/v1?label=&message=Vue.js&color=4FC08D&logo=vuedotjs&logoColor=FFFFFF)](https://vuejs.org/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/dashy)](https://github.com/Lissy93/dashy) | [🌐 dashy.to](https://dashy.to) |
+| [<img src="https://pixelflare.cc/alicia/logo/digital-defense/w256" width="18" /> Digital Defense](https://github.com/Lissy93/personal-security-checklist) - Interactive personal security checklist | [![Qwik](https://img.shields.io/static/v1?label=&message=Qwik&color=ac7ef4&logo=qwik&logoColor=FFFFFF)](https://qwik.builder.io/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/personal-security-checklist)](https://github.com/Lissy93/personal-security-checklist) | [🌐 digital-defense.io](https://digital-defense.io) |
+| [<img src="https://pixelflare.cc/alicia/logo/networking-toolbox-2/w256" width="18" /> Networking Toolbox](https://github.com/Lissy93/networking-toolbox) - offline-first net utils for sysadmins | [![Svelte](https://img.shields.io/static/v1?label=&message=Svelte&color=ff3e00&logo=svelte&logoColor=FFFFFF)](https://svelte.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/networking-toolbox)](https://github.com/Lissy93/networking-toolbox) | [🌐 networkingtoolbox.net](https://networkingtoolbox.net/) |
+| [<img src="https://pixelflare.cc/alicia/logo/awesome-privacy/w256" width="18" /> Awesome Privacy](https://github.com/Lissy93/awesome-privacy) - Curated directory of respectful apps | [![Astro](https://img.shields.io/static/v1?label=&message=Astro&color=E83CB9&logo=astro&logoColor=FFFFFF)](https://astro.build/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/awesome-privacy)](https://github.com/Lissy93/awesome-privacy) | [🌐 awesome-privacy.xyz](https://awesome-privacy.xyz/) |
+| [<img src="https://pixelflare.cc/alicia/logo/domain-locker/w256" width="18" /> Domain Locker](https://github.com/Lissy93/domain-locker) - Domain name portfolio manager | [![Angular](https://img.shields.io/static/v1?label=&message=Angular&color=DD0031&logo=angular&logoColor=FFFFFF)](https://angular.io/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/domain-locker)](https://github.com/Lissy93/domain-locker) | [🌐 domain-locker.com](https://domain-locker.com) |
+| [<img src="https://pixelflare.cc/alicia/logo/email-comparison/w256" width="18" /> Email Comparison](https://github.com/Lissy93/email-comparison) - Objective testing of mail providers | [![Lit](https://img.shields.io/static/v1?label=&message=Lit&color=00ffff&logo=lit&logoColor=FFFFFF)](https://lit.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/email-comparison)](https://github.com/Lissy93/email-comparison) | [🌐 email-comparison](https://email-comparison.as93.net/) |
+| [<img src="https://pixelflare.cc/alicia/logo/who-dat/w256" width="18" /> Who Dat](https://github.com/Lissy93/who-dat) - WHOIS lookup for domain registration info  | [![Alpine.js](https://img.shields.io/static/v1?label=&message=Alpine.js&color=8BC0D0&logo=alpinedotjs&logoColor=FFFFFF)](https://alpinejs.dev/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/who-dat)](https://github.com/Lissy93/who-dat) | [🌐 who-dat.as93.net](https://who-dat.as93.net) |
+| [<img src="https://pixelflare.cc/alicia/logo/cso/w256" width="18" /> Chief Snack Officer](https://github.com/Lissy93/cso) - Office snack management app | [![Solid](https://img.shields.io/static/v1?label=&message=Solid&color=2C4F7C&logo=solid&logoColor=FFFFFF)](https://www.solidjs.com/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/cso)](https://github.com/Lissy93/cso) | [🌐 N/A](https://lissy93.github.io/cso) |
+| [<img src="https://pixelflare.cc/alicia/logo/raid-caclularor/w256" width="18" /> RAID Calculator](https://github.com/Lissy93/raid-calculator) - RAID array capacity and fault tolerance | [![Van.js](https://img.shields.io/static/v1?label=&message=Van.js&color=F44336&logo=vitess&logoColor=FFFFFF)](https://vanjs.org/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/raid-calculator)](https://github.com/Lissy93/raid-calculator) | [🌐 raid-calculator](https://raid-calculator.as93.net/) |
+| [<img src="https://pixelflare.cc/alicia/logo/permissionator/w256" width="18" /> Permissionator](https://github.com/Lissy93/permissionator) - Generating Linux file permissions | [![Marko](https://img.shields.io/static/v1?label=&message=Marko&color=2596BE&logo=marko&logoColor=FFFFFF)](https://markojs.com/) | [![GitHub Repo stars](https://img.shields.io/github/stars/Lissy93/permissionator)](https://github.com/Lissy93/permissionator) | [🌐 permissionator](https://permissionator.as93.net) |
 
 ---
 
@@ -232,28 +236,30 @@ Each app gets built and tested to ensure that it is functional, compliant with t
 | **Lint**: Ensures lint/consistency checks pass | [![🧼 Lint](https://github.com/Lissy93/framework-benchmarks/actions/workflows/lint.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/lint.yml) |
 | **Benchmark**: Executes all app benchmarks | [![📈 Benchmark](https://github.com/Lissy93/framework-benchmarks/actions/workflows/benchmark.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/benchmark.yml) |
 | **Transform**: Formats and publishes results | [![🔄 Transform Results](https://github.com/Lissy93/framework-benchmarks/actions/workflows/transform-results.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/transform-results.yml) |
+| **CI**: Runs checks on PRs to ensure all good | [![🚦 CI](https://github.com/lissy93/framework-benchmarks/actions/workflows/ci.yml/badge.svg)](https://github.com/lissy93/framework-benchmarks/actions/workflows/ci.yml) |
 | **Docker**: Builds and publishes the image | [![🐳 Build & Publish Docker Image](https://github.com/Lissy93/framework-benchmarks/actions/workflows/docker.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/docker.yml) |
+| **Tag**: Bumps version and tags on merge | [![🔖 Tag](https://github.com/Lissy93/framework-benchmarks/actions/workflows/tag.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/tag.yml) |
+| **Release**: Drafts a release with assets | [![🚀 Release](https://github.com/Lissy93/framework-benchmarks/actions/workflows/release.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/release.yml) |
 | **Docs**: Updates dynamic info in markdown | [![📄 Update readme](https://github.com/Lissy93/framework-benchmarks/actions/workflows/update-docs.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/update-docs.yml) |
 | **Mirror**: Syncs repo to Codeberg mirror  | [![🪞 Mirror to Codeberg](https://github.com/Lissy93/framework-benchmarks/actions/workflows/mirror.yml/badge.svg)](https://github.com/Lissy93/framework-benchmarks/actions/workflows/mirror.yml) |
-
 
 <!-- start_all_status -->
 
 | App | Build | Test | Lint |
 |---|---|---|---|
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/react"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/react.png" width="16" /> React</a> | ![React Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-react.svg) | ![React Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-react.svg) | ![React Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-react.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/angular"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/angular.png" width="16" /> Angular</a> | ![Angular Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-angular.svg) | ![Angular Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-angular.svg) | ![Angular Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-angular.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/svelte"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/svelte.png" width="16" /> Svelte</a> | ![Svelte Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-svelte.svg) | ![Svelte Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-svelte.svg) | ![Svelte Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-svelte.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/preact"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/preact.png" width="16" /> Preact</a> | ![Preact Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-preact.svg) | ![Preact Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-preact.svg) | ![Preact Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-preact.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/solid"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/solid.png" width="16" /> Solid.js</a> | ![Solid.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-solid.svg) | ![Solid.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-solid.svg) | ![Solid.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-solid.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/qwik"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/qwik.png" width="16" /> Qwik</a> | ![Qwik Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-qwik.svg) | ![Qwik Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-qwik.svg) | ![Qwik Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-qwik.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vue"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vue.png" width="16" /> Vue 3</a> | ![Vue 3 Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-vue.svg) | ![Vue 3 Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-vue.svg) | ![Vue 3 Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-vue.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/jquery"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/jquery.png" width="16" /> jQuery</a> | ![jQuery Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-jquery.svg) | ![jQuery Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-jquery.svg) | ![jQuery Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-jquery.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/alpine"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/alpine.png" width="16" /> Alpine.js</a> | ![Alpine.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-alpine.svg) | ![Alpine.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-alpine.svg) | ![Alpine.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-alpine.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" width="16" /> Lit</a> | ![Lit Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-lit.svg) | ![Lit Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-lit.svg) | ![Lit Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-lit.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanjs"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" width="16" /> VanJS</a> | ![VanJS Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-vanjs.svg) | ![VanJS Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-vanjs.svg) | ![VanJS Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-vanjs.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" width="16" /> Lume.js</a> | ![Lume.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-lume-js.svg) | ![Lume.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-lume-js.svg) | ![Lume.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-lume-js.svg) |
-| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanilla"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/javascript.png" width="16" /> Vanilla JavaScript</a> | ![Vanilla JavaScript Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/build-vanilla.svg) | ![Vanilla JavaScript Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/test-vanilla.svg) | ![Vanilla JavaScript Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/badges/lint-vanilla.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/react"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/react.png" width="16" /> React</a> | ![React Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-react.svg) | ![React Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-react.svg) | ![React Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-react.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/angular"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/angular.png" width="16" /> Angular</a> | ![Angular Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-angular.svg) | ![Angular Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-angular.svg) | ![Angular Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-angular.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/svelte"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/svelte.png" width="16" /> Svelte</a> | ![Svelte Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-svelte.svg) | ![Svelte Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-svelte.svg) | ![Svelte Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-svelte.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/preact"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/preact.png" width="16" /> Preact</a> | ![Preact Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-preact.svg) | ![Preact Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-preact.svg) | ![Preact Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-preact.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/solid"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/solid.png" width="16" /> Solid.js</a> | ![Solid.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-solid.svg) | ![Solid.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-solid.svg) | ![Solid.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-solid.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/qwik"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/qwik.png" width="16" /> Qwik</a> | ![Qwik Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-qwik.svg) | ![Qwik Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-qwik.svg) | ![Qwik Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-qwik.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vue"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vue.png" width="16" /> Vue 3</a> | ![Vue 3 Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-vue.svg) | ![Vue 3 Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-vue.svg) | ![Vue 3 Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-vue.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/jquery"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/jquery.png" width="16" /> jQuery</a> | ![jQuery Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-jquery.svg) | ![jQuery Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-jquery.svg) | ![jQuery Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-jquery.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/alpine"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/alpine.png" width="16" /> Alpine.js</a> | ![Alpine.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-alpine.svg) | ![Alpine.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-alpine.svg) | ![Alpine.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-alpine.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lit"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/lit.png" width="16" /> Lit</a> | ![Lit Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-lit.svg) | ![Lit Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-lit.svg) | ![Lit Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-lit.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanjs"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/vanjs.png" width="16" /> VanJS</a> | ![VanJS Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-vanjs.svg) | ![VanJS Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-vanjs.svg) | ![VanJS Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-vanjs.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/lume-js"><img src="https://raw.githubusercontent.com/sathvikc/lume-js/refs/heads/main/lume-logo.png" width="16" /> Lume.js</a> | ![Lume.js Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-lume-js.svg) | ![Lume.js Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-lume-js.svg) | ![Lume.js Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-lume-js.svg) |
+| <a href="https://github.com/lissy93/framework-benchmarks/tree/main/apps/vanilla"><img src="https://storage.googleapis.com/as93-screenshots/frontend-benchmarks/framework-logos/javascript.png" width="16" /> Vanilla JavaScript</a> | ![Vanilla JavaScript Build Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/build-vanilla.svg) | ![Vanilla JavaScript Test Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/test-vanilla.svg) | ![Vanilla JavaScript Lint Status](https://raw.githubusercontent.com/lissy93/framework-benchmarks/refs/heads/badges/lint-vanilla.svg) |
 <!-- end_all_status -->
 
 ---
@@ -284,14 +290,14 @@ For our app to be somewhat complete and useful, it must do the following:
 There's certain standards every app should follow, and we want to use best practices, so:
 - Theming: The app should support both light and dark mode, based on the user's preferences
 - Internationalization: The copy should be extracted out of the code, so that it is translatable
-- Accessibility: The app should meet AA standard of accessibility
+- Accessibility: The app should meet AA standard of WCAG in line with the EAA
 - Mobile: The app should be fully responsive and optimized for mobile
 - Performance: The app should be efficiently coded as best as the framework allows
-- Testing: The app should meet 90% test coverage
-- Error Handling: Errors should be handled, correctly surfaced, and tracible
-- Quality: The code should be linted for consistent formatting
-- Security: Inputs must be validated, data via HTTPS, and no known vulnerabilities
-- SEO: Basic meta and og tags, SSR where possible, 
+- Testing: Core functionality, logic and complexity should be tested, aiming for 90% coverage
+- Error Handling: App should be robust, with errors handled gracefully and correctly surfaced
+- Quality: The code should be clean, typechecked, linted and formatted consistently
+- Security: Code should follow secure best practices, inline with OWASP reccomentations
+- SEO: Correct semantic elements, meta and og tags and SSR compatible where applicable
 - CI: Automated tests, lints and validation should ensure all changes are compliant
 
 ### Benchmarking Requirements
@@ -304,10 +310,16 @@ To compare the frameworks, we need to measure:
 - Build time & dev server HMR latency
 
 ### UI Requirements
-The interface is simple, but must be identical arcorss all apps. As validated by the snapshots in the tests.<br>
+The interface is nothing special. It's a simple form which must be identical arcorss all apps, as validated by the snapshots in the tests.<br>
 The screenshots will all look like this:
 
 <img src="https://raw.githubusercontent.com/Lissy93/framework-benchmarks/refs/heads/main/assets/screenshot.png" width="400" />
+
+### Caveats
+This is a fair, like-for-like comparison - but it's not the final word. The app uses all the everyday stuff (state, fetching, input, lists, lifecycle), but it won't push any framework to its limits. So worth bearing in mind:
+- **Scale**: We're not rendering tens of thousands of nodes, or stress-testing giant lists and rapid re-renders - which is where some frameworks pull ahead
+- **Scope**: It's one app archetype. Things like complex routing, deep global state, streaming SSR and heavy animation aren't covered
+- **Real-world variance**: Benchmarks run in CI on a single environment, so treat the numbers as a guide, not gospel
 
 ---
 
@@ -315,21 +327,20 @@ The screenshots will all look like this:
 
 ### Sponsors
 
-![Sponsors](https://readme-contribs.as93.net/sponsors/lissy93?avatarSize=80&perRow=10)
+[![sponsors badge](https://readme-contribs.as93.net/sponsors/lissy93?shape=squircle)](https://github.com/sponsors/lissy93)
 
 ### Contributors
 
-![Contributors](https://readme-contribs.as93.net/contributors/lissy93/framework-benchmarks?avatarSize=80&perRow=10)
+[![contributors badge](https://readme-contribs.as93.net/contributors/lissy93/framework-benchmarks?shape=squircle)](https://github.com/lissy93/framework-benchmarks/graphs/contributors)
 
 
 ### Stargzers
 
-![Stargazers](https://readme-contribs.as93.net/stargazers/lissy93/framework-benchmarks?perRow=16&limit=64)
+[![stargazers badge](https://readme-contribs.as93.net/stargazers/lissy93/framework-benchmarks?perRow=16&shape=squircle)](https://github.com/lissy93/framework-benchmarks/stargazers)
 
 ---
 
 ## License
-
 
 > _**[lissy93/framework-benchmarks](https://github.com/lissy93/framework-benchmarks)** is licensed under [MIT](https://github.com/lissy93/framework-benchmarks/blob/HEAD/LICENSE) © [Alicia Sykes](https://aliciasykes.com) 2025._<br>
 > <sup align="right">For information, see <a href="https://tldrlegal.com/license/mit-license">TLDR Legal > MIT</a></sup>
@@ -339,7 +350,7 @@ The screenshots will all look like this:
 
 ```
 The MIT License (MIT)
-Copyright (c) Alicia Sykes <alicia@omg.com> 
+Copyright (c) Alicia Sykes <alicia@omg.lol> 
 
 Permission is hereby granted, free of charge, to any person obtaining a copy 
 of this software and associated documentation files (the "Software"), to deal 
@@ -363,7 +374,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <!-- License + Copyright -->
 <p  align="center">
-  <i>© <a href="https://aliciasykes.com">Alicia Sykes</a> 2025</i><br>
+  <i>© <a href="https://aliciasykes.com">Alicia Sykes</a> 2025 - present</i><br>
   <i>Licensed under <a href="https://gist.github.com/Lissy93/143d2ee01ccc5c052a17">MIT</a></i><br>
   <a href="https://github.com/lissy93"><img src="https://i.ibb.co/4KtpYxb/octocat-clean-mini.png" /></a><br>
   <sup>Thanks for visiting :)</sup>

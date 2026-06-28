@@ -110,7 +110,7 @@ For a simple weather app, we really didn't need any of Angular's big or flagship
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Angular app. So, checkout:
 
-<a href="https://github.com/Lissy93/domain-locker"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-logos/domain-locker.png" width="96"></a>
+<a href="https://github.com/Lissy93/domain-locker"><img align="left" src="https://pixelflare.cc/alicia/logo/domain-locker/w256" width="96"></a>
 
 > **Domain Locker** - _Domain name portfolio manager_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/domain-locker](https://github.com/Lissy93/domain-locker)<br>

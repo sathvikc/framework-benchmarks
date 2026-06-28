@@ -7,7 +7,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 # Constants
 REPO_URL = "https://github.com/lissy93/framework-benchmarks"
-BADGES_BRANCH = "badges"
+BADGES_BRANCH = "refs/heads/badges"
 README_PATH = Path(".github/README.md")
 FRAMEWORKS_JSON = "frameworks.json"
 

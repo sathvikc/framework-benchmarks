@@ -4,7 +4,6 @@ import { designSystemStyles, baseStyles, componentStyles } from './shared-styles
 import './forecast-item.js';
 
 export class WeatherForecast extends LitElement {
-  // eslint-disable-next-line
   static styles = [
     designSystemStyles,
     baseStyles,
@@ -16,7 +15,6 @@ export class WeatherForecast extends LitElement {
     `
   ];
 
-  // eslint-disable-next-line
   static properties = {
     forecastData: { type: Object },
     _activeForecastIndex: { state: true }
@@ -41,9 +39,9 @@ export class WeatherForecast extends LitElement {
         <div class="forecast">
           <div class="forecast__list" data-testid="forecast-list">
             ${repeat(
-              daily.time,
-              (time, index) => index,
-              (time, index) => html`
+    daily.time,
+    (time, index) => index,
+    (time, index) => html`
                 <forecast-item
                   .forecastData=${daily}
                   .index=${index}
@@ -51,7 +49,7 @@ export class WeatherForecast extends LitElement {
                   @toggle-forecast=${this._handleToggleForecast}
                 ></forecast-item>
               `
-            )}
+  )}
           </div>
         </div>
       </section>
@@ -60,7 +58,7 @@ export class WeatherForecast extends LitElement {
 
   _handleToggleForecast(e) {
     const { index } = e.detail;
-    
+
     // If clicking the same item, collapse it
     if (this._activeForecastIndex === index) {
       this._activeForecastIndex = null;

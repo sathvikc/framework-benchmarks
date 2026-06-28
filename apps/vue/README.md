@@ -112,7 +112,7 @@ I chose Vue for [Dashy](https://github.com/Lissy93/dashy/), because it both has 
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Vue 3 app. So, checkout:
 
-<a href="https://github.com/Lissy93/dashy"><img align="left" src="https://i.ibb.co/yhbt6CY/dashy.png" width="96"></a>
+<a href="https://github.com/Lissy93/dashy"><img align="left" src="https://pixelflare.cc/alicia/logo/dashy/w256" width="96"></a>
 
 > **Dashy** - _Highly configurable self-hostable server dashboard_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/dashy](https://github.com/Lissy93/dashy)<br>

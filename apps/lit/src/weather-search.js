@@ -2,10 +2,9 @@ import { LitElement, html, css } from 'lit';
 import { designSystemStyles, baseStyles, componentStyles } from './shared-styles.js';
 
 export class WeatherSearch extends LitElement {
-  // eslint-disable-next-line
   static styles = [
     designSystemStyles,
-    baseStyles, 
+    baseStyles,
     componentStyles,
     css`
       :host {
@@ -14,7 +13,6 @@ export class WeatherSearch extends LitElement {
     `
   ];
 
-  // eslint-disable-next-line
   static properties = {
     searchQuery: { type: String },
     isLoading: { type: Boolean }
@@ -73,7 +71,7 @@ export class WeatherSearch extends LitElement {
   _handleSubmit(e) {
     e.preventDefault();
     const city = this.searchQuery.trim();
-    
+
     if (!city) {
       this.dispatchEvent(new CustomEvent('search-error', {
         detail: { message: 'Please enter a city name' },

@@ -16,7 +16,7 @@ on:
       - 'website/**'
       - 'frameworks.json'
       - 'config.json'
-  workflow_run:
+  workflow_run: # zizmor: ignore[dangerous-triggers] internal pipeline step, only runs for main-branch runs of our own trusted workflow
     workflows: ["🔄 Transform Results"]
     types: [completed]
     branches: [main]
@@ -27,7 +27,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 jobs:
@@ -39,16 +39,18 @@ jobs:
       frameworks: ${{ steps.matrix.outputs.frameworks }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '18'
           cache: 'npm'
           
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -64,7 +66,7 @@ jobs:
         run: python scripts/verify/check.py
         
       - name: Cache setup for build jobs
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             node_modules
@@ -76,13 +78,15 @@ jobs:
         
       - name: Determine frameworks to build
         id: matrix
+        env:
+          FRAMEWORKS_INPUT: ${{ github.event.inputs.frameworks }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.frameworks }}" != "all" ]; then
-            frameworks="${{ github.event.inputs.frameworks }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "$FRAMEWORKS_INPUT" != "all" ]; then
+            frameworks="$FRAMEWORKS_INPUT"
           else
             frameworks=$(python scripts/get_frameworks.py)
           fi
-          echo "frameworks=$(echo "[$frameworks]" | sed 's/,/", "/g' | sed 's/\[/[\"/ ; s/\]/\"]/')" >> $GITHUB_OUTPUT
+          echo "frameworks=$(echo "[$frameworks]" | sed 's/,/", "/g' | sed 's/\[/[\"/ ; s/\]/\"]/')" >> "$GITHUB_OUTPUT"
           echo "Building frameworks: $frameworks"
 
   build:
@@ -98,10 +102,12 @@ jobs:
         framework: ${{ fromJSON(needs.setup.outputs.frameworks) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -111,7 +117,7 @@ jobs:
         run: pip install -r scripts/requirements.txt
         
       - name: Restore setup cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             node_modules
@@ -124,28 +130,36 @@ jobs:
         
       - name: Build ${{ matrix.framework }}
         id: build-run
+        env:
+          FRAMEWORK: ${{ matrix.framework }}
         run: |
-          if python scripts/run/build.py --framework ${{ matrix.framework }} --ci --static-site; then
-            echo "status=success" >> $GITHUB_OUTPUT
+          if python scripts/run/build.py --framework "$FRAMEWORK" --ci --static-site; then
+            echo "status=success" >> "$GITHUB_OUTPUT"
           else
-            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "status=failure" >> "$GITHUB_OUTPUT"
             exit 1
           fi
-          
+
       - name: Log build status
         if: always()
+        env:
+          FRAMEWORK: ${{ matrix.framework }}
+          BUILD_STATUS: ${{ steps.build-run.outputs.status }}
         run: |
-          echo "Build status for ${{ matrix.framework }}: ${{ steps.build-run.outputs.status }}"
-          if [ "${{ steps.build-run.outputs.status }}" == "success" ]; then
-            echo "✅ ${{ matrix.framework }} built successfully"
+          echo "Build status for $FRAMEWORK: $BUILD_STATUS"
+          if [ "$BUILD_STATUS" == "success" ]; then
+            echo "✅ $FRAMEWORK built successfully"
           else
-            echo "❌ ${{ matrix.framework }} build failed"
+            echo "❌ $FRAMEWORK build failed"
           fi
-          
+
       - name: Generate build badge
         if: always()
+        env:
+          FRAMEWORK: ${{ matrix.framework }}
+          BUILD_STATUS: ${{ steps.build-run.outputs.status }}
         run: |
-          if [[ "${{ steps.build-run.outputs.status }}" == "success" ]]; then
+          if [[ "$BUILD_STATUS" == "success" ]]; then
             status="Success"
             color="3cd96b"
             label_color="33b348"
@@ -154,13 +168,13 @@ jobs:
             color="ff5666"
             label_color="d5334a"
           fi
-          
+
           badge_url="https://img.shields.io/badge/Build-${status}-${color}?logo=rocket&logoColor=fff&labelColor=${label_color}"
-          curl -o "build-${{ matrix.framework }}.svg" "$badge_url"
+          curl -o "build-${FRAMEWORK}.svg" "$badge_url"
           
       - name: Upload badge
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: badge-build-${{ matrix.framework }}
           path: build-${{ matrix.framework }}.svg
@@ -173,10 +187,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -186,7 +202,7 @@ jobs:
         run: pip install -r scripts/requirements.txt
         
       - name: Restore setup cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             node_modules
@@ -203,7 +219,7 @@ jobs:
           npm run build -- --static-site 
           
       - name: Upload website artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: website
           path: dist-website
@@ -214,23 +230,30 @@ jobs:
     needs: [setup, build, website]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
-          
+          persist-credentials: false
+
       - name: Download website
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: website
           path: website-artifact
-          
+
       - name: Deploy to website branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           git config user.name 'liss-bot'
           git config user.email 'alicia-gh-bot@mail.as93.net'
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
 
           # Switch to website branch (create if missing)
           if git ls-remote --exit-code --heads origin website >/dev/null 2>&1; then
@@ -277,24 +300,31 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     continue-on-error: true
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
-          
+          persist-credentials: false
+
       - name: Download all badges
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: badge-build-*
           path: badges
           merge-multiple: true
-          
+
       - name: Commit badges
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           git config user.name 'liss-bot'
           git config user.email 'alicia-gh-bot@mail.as93.net'
-          
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+
           # Switch to badges branch
           git fetch origin badges:badges 2>/dev/null || git checkout --orphan badges
           git checkout badges 2>/dev/null || true
@@ -303,7 +333,7 @@ jobs:
           # Copy badges and commit
           cp badges/*.svg . 2>/dev/null || echo "⚠️ No badge files found"
           
-          if git add *.svg && git diff --staged --quiet; then
+          if git add ./*.svg && git diff --staged --quiet; then
             echo "ℹ️ No badge changes to commit"
           else
             git commit -m "Update build badges"

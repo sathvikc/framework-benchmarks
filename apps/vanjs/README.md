@@ -110,7 +110,7 @@ VanJS works well for simple enhancements where you need just a touch of reactivi
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a VanJS app. So, checkout:
 
-<a href="https://github.com/Lissy93/raid-calculator"><img align="left" src="https://storage.googleapis.com/as93-screenshots/project-screenshots/raid-caclularor.png" width="96"></a>
+<a href="https://github.com/Lissy93/raid-calculator"><img align="left" src="https://pixelflare.cc/alicia/logo/raid-caclularor/w256" width="96"></a>
 
 > **RAID Calculator** - _RAID array capacity and fault tolerance_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/raid-calculator](https://github.com/Lissy93/raid-calculator)<br>

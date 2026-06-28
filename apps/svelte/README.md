@@ -111,7 +111,7 @@ For our simple weather app, we didn't need Svelte's built-in animations or trans
 ## Real-World App
 Since the weather app is very simple, it may be helpful to see a more practical implementation of a Svelte app. So, checkout:
 
-<a href="https://github.com/Lissy93/networking-toolbox"><img align="left" src="https://github.com/Lissy93/networking-toolbox/blob/main/static/icon.png?raw=true" width="96"></a>
+<a href="https://github.com/Lissy93/networking-toolbox"><img align="left" src="https://pixelflare.cc/alicia/logo/networking-toolbox-2/w256" width="96"></a>
 
 > **Networking Toolbox** - _100+ offline-first networking tools for sysadmins_<br>
 > 🐙 Get it on GitHub at [github.com/Lissy93/networking-toolbox](https://github.com/Lissy93/networking-toolbox)<br>
