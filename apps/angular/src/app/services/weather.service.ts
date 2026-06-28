@@ -1,18 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, switchMap, delay } from 'rxjs/operators';
 import { WeatherData, GeocodingResult } from '../types/weather.types';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class WeatherService {
+  private readonly http = inject(HttpClient);
   private readonly baseUrl = 'https://api.open-meteo.com/v1';
   private readonly geocodingUrl = 'https://geocoding-api.open-meteo.com/v1';
   private readonly useMockData: boolean;
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.useMockData = this.shouldUseMockData();
   }
 

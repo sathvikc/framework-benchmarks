@@ -1,12 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { WeatherData } from '../types/weather.types';
 import { WeatherUtils } from '../utils/weather.utils';
 
 @Component({
   selector: 'app-current-weather',
-  standalone: true,
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (weatherData(); as weatherData) {
       <section class="current-section">

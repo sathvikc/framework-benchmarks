@@ -1,7 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-
+import { Component, inject } from '@angular/core';
 import { WeatherStateService } from './services/weather-state.service';
-
 import { SearchFormComponent } from './components/search-form.component';
 import { LoadingStateComponent } from './components/loading-state.component';
 import { ErrorStateComponent } from './components/error-state.component';
@@ -9,14 +7,12 @@ import { WeatherContentComponent } from './components/weather-content.component'
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [
     SearchFormComponent,
     LoadingStateComponent,
     ErrorStateComponent,
     WeatherContentComponent
   ],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="header">
       <div class="container">

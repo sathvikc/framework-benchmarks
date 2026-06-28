@@ -1,13 +1,11 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { WeatherData } from '../types/weather.types';
 import { CurrentWeatherComponent } from './current-weather.component';
 import { ForecastComponent } from './forecast.component';
 
 @Component({
   selector: 'app-weather-content',
-  standalone: true,
   imports: [CurrentWeatherComponent, ForecastComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="weather-content"

@@ -1,12 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { DailyWeather } from '../types/weather.types';
 import { WeatherUtils } from '../utils/weather.utils';
 
 @Component({
   selector: 'app-forecast-item',
-  standalone: true,
-  imports: [],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div
       class="forecast-item"

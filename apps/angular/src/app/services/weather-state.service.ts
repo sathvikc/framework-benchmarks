@@ -1,13 +1,13 @@
-import { Injectable, signal } from '@angular/core';
+import { Service, signal, inject } from '@angular/core';
 import { EMPTY, of } from 'rxjs';
 import { catchError, finalize, delay, switchMap } from 'rxjs/operators';
 import { WeatherService } from './weather.service';
 import { AppState } from '../types/weather.types';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Service()
 export class WeatherStateService {
+  private readonly weatherService = inject(WeatherService);
+
   private readonly stateSignal = signal<AppState>({
     weatherData: null,
     isLoading: false,
@@ -16,7 +16,7 @@ export class WeatherStateService {
 
   readonly state = this.stateSignal.asReadonly();
 
-  constructor(private weatherService: WeatherService) {
+  constructor() {
     this.initializeApp();
   }
 

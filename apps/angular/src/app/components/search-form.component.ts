@@ -1,11 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
+import { Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-search-form',
-  standalone: true,
   imports: [FormsModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="search-section">
       <form class="search-form" data-testid="search-form" (ngSubmit)="onSubmit()">

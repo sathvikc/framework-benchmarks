@@ -1,12 +1,10 @@
-import { ChangeDetectionStrategy, Component, ElementRef, afterNextRender, inject, input, signal } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, input, signal } from '@angular/core';
 import { WeatherData } from '../types/weather.types';
 import { ForecastItemComponent } from './forecast-item.component';
 
 @Component({
   selector: 'app-forecast',
-  standalone: true,
   imports: [ForecastItemComponent],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (weatherData(); as weatherData) {
       <section class="forecast-section">
