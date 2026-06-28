@@ -13,12 +13,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           persist-credentials: false
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.11"
           cache: "pip"
@@ -88,12 +88,18 @@ jobs:
 
       - name: Summary
         if: always()
+        env:
+          FETCH: ${{ steps.fetch.conclusion }}
+          INSERT_TABLE: ${{ steps.insert_table.conclusion }}
+          INSERT_STATUSES: ${{ steps.insert_statuses.conclusion }}
+          BUILD_READMES: ${{ steps.build_readmes.conclusion }}
+          BUILD_CHARTS: ${{ steps.build_charts.conclusion }}
         run: |
-          fetch="${{ steps.fetch.conclusion }}"
-          insert_table="${{ steps.insert_table.conclusion }}"
-          insert_statuses="${{ steps.insert_statuses.conclusion }}"
-          build_readmes="${{ steps.build_readmes.conclusion }}"
-          build_charts="${{ steps.build_charts.conclusion }}"
+          fetch="$FETCH"
+          insert_table="$INSERT_TABLE"
+          insert_statuses="$INSERT_STATUSES"
+          build_readmes="$BUILD_READMES"
+          build_charts="$BUILD_CHARTS"
 
           line() {
             if [ "$1" = "success" ]; then echo "- ✅ $2"; else echo "- ❌ $2"; fi

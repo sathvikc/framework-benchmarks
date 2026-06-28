@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
   actions: read
 
 env:
@@ -39,17 +39,19 @@ jobs:
       frameworks: ${{ steps.matrix.outputs.frameworks }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
         
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '18'
           cache: 'npm'
           cache-dependency-path: package-lock.json
           
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -67,7 +69,7 @@ jobs:
         run: python scripts/setup/main.py --skip-build
         
       - name: Cache node_modules and Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             node_modules
@@ -78,16 +80,43 @@ jobs:
             ${{ runner.os }}-node-modules-playwright-
             ${{ runner.os }}-node-modules-
             
+      - name: Filter changed paths
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4
+        id: changed
+        with:
+          list-files: shell
+          filters: |
+            shared:
+              - 'package.json'
+              - 'package-lock.json'
+              - 'frameworks.json'
+              - 'config.json'
+              - 'playwright.config.js'
+              - 'tests/**'
+              - 'scripts/**'
+              - '.github/workflows/test.yml'
+            apps:
+              - 'apps/**'
+
       - name: Determine frameworks to test
         id: matrix
+        env:
+          FRAMEWORKS_INPUT: ${{ github.event.inputs.frameworks }}
+          EVENT_NAME: ${{ github.event_name }}
+          SHARED: ${{ steps.changed.outputs.shared }}
+          APPS_FILES: ${{ steps.changed.outputs.apps_files }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.frameworks }}" != "all" ]; then
-            frameworks="${{ github.event.inputs.frameworks }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$FRAMEWORKS_INPUT" != "all" ]; then
+            frameworks="$FRAMEWORKS_INPUT"
+          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$SHARED" != "true" ]; then
+            # PR touching only specific apps: test just those frameworks
+            frameworks=$(echo "$APPS_FILES" | tr ' ' '\n' | sed -nE 's#^apps/([^/]+)/.*#\1#p' | sort -u | paste -sd, -)
           else
             # Get framework list from Python config
             frameworks=$(python scripts/get_frameworks.py)
           fi
-          echo "frameworks=$(echo "[$frameworks]" | sed 's/,/", "/g' | sed 's/\[/[\"/ ; s/\]/\"]/')" >> $GITHUB_OUTPUT
+          echo "frameworks=$(echo "[$frameworks]" | sed 's/,/", "/g' | sed 's/\[/[\"/ ; s/\]/\"]/')" >> "$GITHUB_OUTPUT"
           echo "Testing frameworks: $frameworks"
 
   test:
@@ -103,16 +132,18 @@ jobs:
         framework: ${{ fromJSON(needs.setup.outputs.frameworks) }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
         
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '18'
           cache: 'npm'
           
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: '3.9'
           cache: 'pip'
@@ -122,7 +153,7 @@ jobs:
         run: pip install -r scripts/requirements.txt
           
       - name: Restore dependencies cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: |
             node_modules
@@ -140,7 +171,7 @@ jobs:
           fi
           
       - name: Add node_modules/.bin to PATH
-        run: echo "${{ github.workspace }}/node_modules/.bin" >> $GITHUB_PATH
+        run: echo "${{ github.workspace }}/node_modules/.bin" >> "$GITHUB_PATH"
           
       - name: Install Playwright browsers (if cache miss)
         run: |
@@ -167,7 +198,7 @@ jobs:
           
       - name: Run tests for ${{ matrix.framework }}
         id: test-run
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@ad984534de44a9489a53aefd81eb77f87c70dc60 # v4
         with:
           timeout_minutes: 10
           max_attempts: 4
@@ -181,30 +212,36 @@ jobs:
             
       - name: Create detailed result file
         if: always()
+        env:
+          OUTCOME: ${{ steps.test-run.outcome }}
+          FRAMEWORK: ${{ matrix.framework }}
+          TOTAL_ATTEMPTS: ${{ steps.test-run.outputs.total_attempts || '1' }}
+          EXIT_CODE: ${{ steps.test-run.outputs.exit_code || '0' }}
+          ELAPSED_TIME: ${{ steps.test-run.outputs.elapsed_time || 'unknown' }}
         run: |
           mkdir -p test-status test-details
-          
+
           # Determine final status (failed if all retries exhausted)
-          if [[ "${{ steps.test-run.outcome }}" == "success" ]]; then
+          if [[ "$OUTCOME" == "success" ]]; then
             status="passed"
             icon="✅"
           else
             status="failed"
             icon="❌"
           fi
-          
+
           # Create status file
-          echo "$status" > test-status/${{ matrix.framework }}.txt
-          
+          echo "$status" > "test-status/${FRAMEWORK}.txt"
+
           # Create detailed results file
-          cat > test-details/${{ matrix.framework }}.json << EOF
+          cat > "test-details/${FRAMEWORK}.json" << EOF
           {
-            "framework": "${{ matrix.framework }}",
+            "framework": "${FRAMEWORK}",
             "status": "$status",
             "icon": "$icon",
-            "attempts": ${{ steps.test-run.outputs.total_attempts || '1' }},
-            "final_attempt": ${{ steps.test-run.outputs.exit_code || '0' }},
-            "duration": "${{ steps.test-run.outputs.elapsed_time || 'unknown' }}",
+            "attempts": ${TOTAL_ATTEMPTS},
+            "final_attempt": ${EXIT_CODE},
+            "duration": "${ELAPSED_TIME}",
             "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
             "runner": "${{ runner.os }}",
             "node_version": "$(node --version)",
@@ -214,7 +251,7 @@ jobs:
             
       - name: Upload test results (conditional)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ matrix.framework }}-test-results
           path: |
@@ -225,7 +262,7 @@ jobs:
           
       - name: Upload test status and details
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ matrix.framework }}-status
           path: |
@@ -235,14 +272,18 @@ jobs:
           
       - name: Generate test badge
         if: always()
+        env:
+          OUTCOME: ${{ steps.test-run.outcome }}
+          TOTAL_ATTEMPTS: ${{ steps.test-run.outputs.total_attempts || '1' }}
+          FRAMEWORK: ${{ matrix.framework }}
         run: |
           # Determine badge status and color
-          if [[ "${{ steps.test-run.outcome }}" == "success" ]]; then
+          if [[ "$OUTCOME" == "success" ]]; then
             status="Passing"
             color="3cd96b"
             label_color="33b348"
           else
-            attempts="${{ steps.test-run.outputs.total_attempts || '1' }}"
+            attempts="$TOTAL_ATTEMPTS"
             if [[ "$attempts" -gt "1" ]]; then
               status="Unstable"
               color="fb974e"
@@ -253,14 +294,14 @@ jobs:
               label_color="d5334a"
             fi
           fi
-          
+
           # Generate badge
           badge_url="https://img.shields.io/badge/Tests-${status}-${color}?logo=vitest&logoColor=fff&labelColor=${label_color}"
-          curl -o "test-${{ matrix.framework }}.svg" "$badge_url"
+          curl -o "test-${FRAMEWORK}.svg" "$badge_url"
           
       - name: Upload badge
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: badge-test-${{ matrix.framework }}
           path: test-${{ matrix.framework }}.svg
@@ -273,29 +314,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
         
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '18'
           cache: 'npm'
           
       - name: Download all test status artifacts
         if: always()
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: "*-status"
           path: test-artifacts
           merge-multiple: true
           
       - name: Generate test summary
+        env:
+          FRAMEWORKS_JSON: ${{ needs.setup.outputs.frameworks }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           cd test-artifacts || exit 1
-          
+
           # Get frameworks and initialize counters
-          frameworks="${{ needs.setup.outputs.frameworks }}"
-          frameworks_array=($(echo "$frameworks" | tr -d '[]"' | tr ',' '\n' | xargs))
+          frameworks="$FRAMEWORKS_JSON"
+          read -ra frameworks_array <<< "$(echo "$frameworks" | tr -d '[]"' | tr ',' ' ')"
           passed_count=0
           failed_count=0
           total_count=${#frameworks_array[@]}
@@ -350,14 +399,16 @@ jobs:
           # Add workflow information
           {
             echo ""
-            echo "**Workflow Info:** Triggered by ${{ github.event_name }} on \`${{ github.ref_name }}\` by @${{ github.actor }} | [View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "**Workflow Info:** Triggered by ${EVENT_NAME} on \`${REF_NAME}\` by @${ACTOR} | [View Run](${RUN_URL})"
           } >> "$GITHUB_STEP_SUMMARY"
           
           # Set environment variables
           success_rate=$(( passed_count * 100 / total_count ))
-          echo "FAILED_COUNT=$failed_count" >> $GITHUB_ENV
-          echo "PASSED_COUNT=$passed_count" >> $GITHUB_ENV
-          echo "SUCCESS_RATE=$success_rate" >> $GITHUB_ENV
+          {
+            echo "FAILED_COUNT=$failed_count"
+            echo "PASSED_COUNT=$passed_count"
+            echo "SUCCESS_RATE=$success_rate"
+          } >> "$GITHUB_ENV"
           
           cd ..
           
@@ -382,25 +433,27 @@ jobs:
           
       - name: Create status badge data
         if: always()
+        env:
+          FRAMEWORKS_JSON: ${{ needs.setup.outputs.frameworks }}
         run: |
           mkdir -p badge-data
-          
+
           # Calculate total frameworks from the array
-          frameworks="${{ needs.setup.outputs.frameworks }}"
-          frameworks_array=($(echo "$frameworks" | tr -d '[]"' | tr ',' '\n' | xargs))
+          frameworks="$FRAMEWORKS_JSON"
+          read -ra frameworks_array <<< "$(echo "$frameworks" | tr -d '[]"' | tr ',' ' ')"
           total_count=${#frameworks_array[@]}
           
           # Determine badge color (with null checks)
           if [[ -z "$FAILED_COUNT" || -z "$SUCCESS_RATE" ]]; then
             badge_color="lightgrey"
             badge_message="unknown"
-          elif [ $FAILED_COUNT -eq 0 ]; then
+          elif [ "$FAILED_COUNT" -eq 0 ]; then
             badge_color="brightgreen" 
             badge_message="${PASSED_COUNT}/${total_count} passed"
-          elif [ $SUCCESS_RATE -ge 80 ]; then
+          elif [ "$SUCCESS_RATE" -ge 80 ]; then
             badge_color="green"
             badge_message="${PASSED_COUNT}/${total_count} passed"
-          elif [ $SUCCESS_RATE -ge 50 ]; then
+          elif [ "$SUCCESS_RATE" -ge 50 ]; then
             badge_color="yellow"
             badge_message="${PASSED_COUNT}/${total_count} passed"
           else
@@ -422,7 +475,7 @@ jobs:
           
       - name: Upload badge data
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: badge-data
           path: badge-data/test-results.json
@@ -434,25 +487,32 @@ jobs:
     if: ${{ always() && github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     continue-on-error: true
+    permissions:
+      contents: write
     steps:
       - name: Checkout with bot token
-        uses: actions/checkout@v4
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
-          
+          persist-credentials: false
+
       - name: Download all badges
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           pattern: badge-test-*
           path: badges
           merge-multiple: true
-          
+
       - name: Commit badges
+        env:
+          TOKEN: ${{ secrets.BOT_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
           git config user.name 'liss-bot'
           git config user.email 'alicia-gh-bot@mail.as93.net'
-          
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+
           # Switch to badges branch
           git fetch origin badges:badges 2>/dev/null || git checkout --orphan badges
           git checkout badges 2>/dev/null || true
@@ -461,7 +521,7 @@ jobs:
           # Copy badges and commit
           cp badges/*.svg . 2>/dev/null || echo "⚠️ No badge files found"
           
-          if git add *.svg && git diff --staged --quiet; then
+          if git add ./*.svg && git diff --staged --quiet; then
             echo "ℹ️ No badge changes to commit"
           else
             git commit -m "Update test badges"

@@ -44,7 +44,7 @@
         >
             <img class="framework-icon" 
                  width="32" 
-                 src="https://cdn.simpleicons.org/{{ framework.meta.iconName or framework.id }}"
+                 src="{{ framework.meta.iconUrl or ('https://cdn.simpleicons.org/' ~ (framework.meta.iconName or framework.id)) }}"
                  alt="{{ framework.meta.emoji or '🔧' }}"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="framework-fallback" style="display: none;">{{ (framework.name or framework.id)[0] }}</div>
@@ -203,7 +203,7 @@
         <a href="/{{ framework.id }}/" class="framework-card" style="--fw-color: {{ framework.meta.color or '#3498db' }};" data-framework="{{ framework.id }}">
             <img class="framework-icon" 
                  width="64" 
-                 src="https://cdn.simpleicons.org/{{ framework.meta.iconName or framework.id }}"
+                 src="{{ framework.meta.iconUrl or ('https://cdn.simpleicons.org/' ~ (framework.meta.iconName or framework.id)) }}"
                  alt="{{ framework.meta.emoji or '🔧' }}"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="framework-fallback" style="display: none;">{{ (framework.name or framework.id)[0] }}</div>

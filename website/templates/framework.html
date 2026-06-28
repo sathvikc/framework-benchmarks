@@ -9,7 +9,7 @@
         <!-- Hero Section -->
         <article class="framework-hero">
             <img class="hero-icon" 
-                 src="https://cdn.simpleicons.org/{{ framework.meta.iconName or framework.id }}"
+                 src="{{ framework.meta.iconUrl or ('https://cdn.simpleicons.org/' ~ (framework.meta.iconName or framework.id)) }}"
                  alt="{{ framework.meta.emoji or '🔧' }}"
                  onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
             <div class="framework-fallback" style="display: none;">{{ (framework.name or framework.id)[0] }}</div>
@@ -351,6 +351,7 @@
         </article>
         
         <!-- About Section -->
+        {% if framework.meta.video %}
         <article class="framework-video">
             <h3>Intro to {{ framework.name or framework.id.title() }}</h3>
             <div class="video-container">
@@ -363,6 +364,7 @@
             </iframe>
             </div>
         </article>
+        {% endif %}
         
         <!-- About Framework Section -->
         {% if framework_commentary.about %}
