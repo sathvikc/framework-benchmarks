@@ -18,7 +18,7 @@ export class WeatherService {
   private shouldUseMockData(): boolean {
     // Check if we're in a testing environment (Playwright sets specific user agents)
     const isTestEnvironment = navigator.userAgent.includes('Playwright') ||
-                              navigator.userAgent.includes('HeadlessChrome');
+      navigator.userAgent.includes('HeadlessChrome');
 
     // Don't use mock data if we're explicitly testing API errors
     if (window.location.search.includes('mock=false')) {
@@ -41,7 +41,7 @@ export class WeatherService {
 
   private isTestEnvironment(): boolean {
     return navigator.userAgent.includes('Playwright') ||
-           navigator.userAgent.includes('HeadlessChrome');
+      navigator.userAgent.includes('HeadlessChrome');
   }
 
   private getMockGeocodingData(cityName: string): GeocodingResult {
@@ -93,9 +93,14 @@ export class WeatherService {
       return of(this.getMockGeocodingData(cityName));
     }
 
-    const url = `${this.geocodingUrl}/search?name=${encodeURIComponent(cityName)}&count=1&language=en&format=json`;
-
-    return this.http.get<{ results: GeocodingResult[] }>(url).pipe(
+    return this.http.get<{ results: GeocodingResult[] }>(`${this.geocodingUrl}/search`, {
+      params: {
+        name: cityName,
+        count: '1',
+        language: 'en',
+        format: 'json'
+      }
+    }).pipe(
       map((response: { results: GeocodingResult[] }) => {
         if (!response.results || response.results.length === 0) {
           throw new Error('Location not found');
@@ -114,17 +119,15 @@ export class WeatherService {
       return this.getMockData();
     }
 
-    const params = new URLSearchParams({
-      latitude: latitude.toString(),
-      longitude: longitude.toString(),
-      daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,rain_sum,uv_index_max,precipitation_probability_max',
-      current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,snowfall,showers,rain,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_direction_10m,wind_gusts_10m,wind_speed_10m',
-      timezone: 'GMT'
-    });
-
-    const url = `${this.baseUrl}/forecast?${params}`;
-
-    return this.http.get<WeatherData>(url).pipe(
+    return this.http.get<WeatherData>(`${this.baseUrl}/forecast`, {
+      params: {
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
+        daily: 'temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,rain_sum,uv_index_max,precipitation_probability_max',
+        current: 'temperature_2m,relative_humidity_2m,apparent_temperature,is_day,snowfall,showers,rain,precipitation,weather_code,cloud_cover,pressure_msl,surface_pressure,wind_direction_10m,wind_gusts_10m,wind_speed_10m',
+        timezone: 'GMT'
+      }
+    }).pipe(
       catchError(error => {
         console.error('Weather API error:', error);
         return throwError(() => new Error('Unable to fetch weather data. Please try again later.'));
