@@ -1,0 +1,191 @@
+# Builds all framework apps and drafts a GitHub release with the compiled
+# apps, the comparison website, the benchmark results, SHA256 checksums and
+# a SLSA build-provenance attestation attached as assets
+#
+# Triggered by:
+# - Push of any major/minor (vX.Y.0) git tag
+# - Manual dispatch with any existing tag (any version)
+
+name: 🚀 Release
+
+on:
+  push:
+    tags: ['v*.*.0']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing git tag to release (e.g. v1.2.0)'
+        required: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: 🚀 Build & Draft Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: 🛎️ Checkout tag
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6 # zizmor: ignore[cache-poisoning] no cache is configured here
+        with:
+          node-version: '22'
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.11'
+
+      - name: 📥 Install dependencies and prepare project
+        run: |
+          set -euo pipefail
+          pip install -r scripts/requirements.txt
+          npm ci
+          python scripts/setup/main.py --skip-build
+
+      - name: 🏗️ Build all apps and comparison website
+        run: |
+          set -euo pipefail
+          npm run build -- --static-site --ci
+          test -f dist-website/index.html \
+            || { echo "::error::dist-website was not built"; exit 1; }
+
+      - name: 📦 Package release assets
+        id: package
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+
+          # Combined site: all compiled apps + the comparison website
+          tar -czf "release-assets/framework-benchmarks-website-${TAG}.tar.gz" -C dist-website .
+
+          # Individual compiled apps
+          count=0
+          IFS=',' read -ra IDS <<< "$(python scripts/get_frameworks.py)"
+          for id in "${IDS[@]}"; do
+            if [ -d "dist-website/$id" ]; then
+              tar -czf "release-assets/app-${id}-${TAG}.tar.gz" -C dist-website "$id"
+              count=$((count + 1))
+            else
+              echo "::warning::No build output for '$id', skipping"
+            fi
+          done
+          echo "Packaged $count app(s)"
+
+          # Benchmark results (committed JSON/TSV in results/)
+          mkdir -p results-staging
+          cp results/*.json results/*.tsv results-staging/ 2>/dev/null || true
+          if [ -n "$(ls -A results-staging 2>/dev/null)" ]; then
+            tar -czf "release-assets/framework-benchmarks-results-${TAG}.tar.gz" -C results-staging .
+          else
+            echo "::warning::No benchmark results found in results/"
+          fi
+
+          echo "Release assets:"
+          ls -lh release-assets
+
+      - name: 🪪 Generate build provenance attestation
+        id: attest
+        continue-on-error: true
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4
+        with:
+          subject-path: 'release-assets/*.tar.gz'
+          show-summary: false
+
+      - name: 📤 Stage attestation bundle
+        if: steps.attest.outcome == 'success'
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          set -euo pipefail
+          cp "$BUNDLE" "release-assets/provenance-${TAG}.intoto.jsonl"
+
+      - name: 🔢 Generate SHA256 checksums
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          sha256sum ./*.tar.gz > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: 🔎 Find previous release tag
+        id: prev
+        env:
+          CURRENT_TAG: ${{ env.TAG }}
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          PREV=$({ echo "$CURRENT_TAG"; git tag -l 'v*.*.0' || true; } \
+            | sort -uV \
+            | awk -v cur="$CURRENT_TAG" '$0 == cur { print prev; exit } { prev = $0 }')
+          echo "tag=$PREV" >> "$GITHUB_OUTPUT"
+
+      - name: 📝 Create draft release
+        id: release
+        # Kept over `gh release create` for built-in generate_release_notes,
+        # previous_tag selection, fail_on_unmatched_files and multi-file upload.
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3 # zizmor: ignore[superfluous-actions]
+        with:
+          tag_name: ${{ env.TAG }}
+          name: Release ${{ env.TAG }}
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+          previous_tag: ${{ steps.prev.outputs.tag }}
+          fail_on_unmatched_files: true
+          files: release-assets/*
+          token: ${{ secrets.BOT_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: 📋 Job summary
+        if: always()
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          PREV_TAG: ${{ steps.prev.outputs.tag }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
+          ATTEST_URL: ${{ steps.attest.outputs.attestation-url }}
+          ATTEST_OUTCOME: ${{ steps.attest.outcome }}
+        run: |
+          set -euo pipefail
+          {
+            echo "## 🚀 Release ${TAG}"
+            echo ""
+            echo "| Item | Value |"
+            echo "|------|-------|"
+            echo "| Tag | [\`${TAG}\`](${REPO_URL}/releases/tag/${TAG}) |"
+            if [ -n "$PREV_TAG" ]; then
+              echo "| Previous tag | [\`${PREV_TAG}\`](${REPO_URL}/releases/tag/${PREV_TAG}) |"
+            fi
+            echo ""
+            echo "### Assets"
+            echo ""
+            echo '```'
+            ( cd release-assets && ls -1 ) 2>/dev/null || echo "none"
+            echo '```'
+            echo ""
+            if [ "$ATTEST_OUTCOME" = "success" ] && [ -n "$ATTEST_URL" ]; then
+              echo "| Attestation | ✅ [View](${ATTEST_URL}) |"
+            else
+              echo "| Attestation | ⚠️ Failed or skipped |"
+            fi
+            if [ -n "$RELEASE_URL" ]; then
+              echo "| Draft release | ✅ [Review and publish](${RELEASE_URL}) |"
+            else
+              echo "| Draft release | ❌ Failed |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

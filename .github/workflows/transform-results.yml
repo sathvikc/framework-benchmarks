@@ -1,0 +1,250 @@
+name: 🔄 Transform Results
+
+on:
+  workflow_run: # zizmor: ignore[dangerous-triggers] internal pipeline step, only runs for main-branch
+    workflows: ["📈 Benchmark"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+  actions: read
+
+env:
+  NODE_VERSION: '22'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  transform-results:
+    name: Transform & Commit Results
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+
+      - name: 📥 Download Benchmark Results
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: benchmark-results-*
+          merge-multiple: true
+          path: ./downloaded-artifacts
+
+      - name: 🔍 Verify Downloaded Artifacts
+        run: |
+          echo "📂 Downloaded artifacts structure:"
+          find ./downloaded-artifacts -type f -name "*.json" | head -20 || echo "No JSON files found"
+
+          if [ ! -d "./downloaded-artifacts" ] || [ -z "$(find ./downloaded-artifacts -name "*.json" -type f)" ]; then
+            echo "❌ No benchmark results found in artifacts"
+            exit 1
+          fi
+
+          echo "✅ Found benchmark results"
+
+      - name: 🗂️ Prepare Benchmark Results Directory
+        run: | # zizmor: ignore[github-env] COMMIT_TO_MAIN is a parsed true/false boolean from our own artifact, not arbitrary input
+          # Create a clean benchmark-results directory structure
+          mkdir -p benchmark-results
+
+          # Locate the results the benchmark job uploaded
+          src_dir=$(find ./downloaded-artifacts -type d -name benchmark-results | head -1)
+          if [ -n "$src_dir" ]; then
+            echo "📂 Copying results from: $src_dir"
+            cp -r "$src_dir"/. benchmark-results/ 2>/dev/null || true
+          fi
+
+          # Fallback: gather any stray JSON files (excluding the context file)
+          if [ -z "$(find benchmark-results -name "*.json" -type f 2>/dev/null)" ]; then
+            find ./downloaded-artifacts -name "*.json" -type f ! -name workflow-context.json \
+              -exec cp {} benchmark-results/ \; 2>/dev/null || true
+          fi
+
+          if [ -z "$(find benchmark-results -name "*.json" -type f 2>/dev/null)" ]; then
+            echo "❌ Could not find benchmark results in artifacts"
+            exit 1
+          fi
+
+          # Read workflow context to determine if we should commit to main
+          context_file=$(find ./downloaded-artifacts benchmark-results -name workflow-context.json -type f 2>/dev/null | head -1)
+          if [ -n "$context_file" ]; then
+            COMMIT_TO_MAIN=$(python3 -c "import json; print(json.load(open('$context_file')).get('commit_to_main', 'false'))" 2>/dev/null || echo "false")
+            echo "COMMIT_TO_MAIN=$COMMIT_TO_MAIN" >> "$GITHUB_ENV"
+            echo "📋 Workflow context: commit_to_main=$COMMIT_TO_MAIN"
+          else
+            echo "COMMIT_TO_MAIN=false" >> "$GITHUB_ENV"
+            echo "📋 No workflow context found, defaulting to skip main branch commit"
+          fi
+
+          echo "📊 Final benchmark-results structure:"
+          find benchmark-results -type f -name "*.json" | head -10
+
+      - name: 🔄 Transform Results
+        run: |
+          echo "🔄 Transforming benchmark results..."
+
+          # Ensure results directory exists
+          mkdir -p results
+
+          # Set PYTHONPATH for our transform scripts
+          export PYTHONPATH="$PWD:$PWD/scripts"
+
+          # Transform results with averaging (since benchmarks might run multiple executions)
+          python scripts/transform/benchmark_results.py \
+            --format both \
+            --average \
+            --results-dir benchmark-results \
+            --output-dir results
+
+          echo "📊 Generated files:"
+          ls -la results/
+
+      - name: 📊 Generate Chart Configurations
+        run: |
+          echo "📊 Generating Chart.js configurations..."
+          python scripts/transform/build_charts.py
+          echo "✅ Chart configurations and README charts generated"
+
+      - name: 📊 Generate Framework Stats
+        run: |
+          echo "📊 Generating framework stats..."
+          python scripts/transform/fetch_framework_stats.py || echo "⚠️ Framework stats generation failed"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📊 Generate Results Summary
+        run: |
+          {
+            echo "## 🔄 Benchmark Results Transformation"
+            echo ""
+            echo "- **Status**: ✅ Success"
+            echo "- **Timestamp**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo "- **Source**: Workflow run #${{ github.event.workflow_run.run_number }}"
+            echo "- **Main Branch Commit**: $([ "$COMMIT_TO_MAIN" = "true" ] && echo "✅ Enabled" || echo "⏭️ Skipped")"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📝 Commit to Results Branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          TIMESTAMP=$(date -u '+%Y%m%d_%H%M%S')
+
+          git config user.name "liss-bot"
+          git config user.email "alicia-gh-bot@mail.as93.net"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+
+          # Store current files in a temporary location
+          mkdir -p /tmp/results-data
+          if [ -d "benchmark-results" ]; then cp -r benchmark-results /tmp/results-data/ 2>/dev/null || true; fi
+          if [ -d "results" ]; then cp -r results /tmp/results-data/ 2>/dev/null || true; fi
+          if [ -d "website/static/charts" ]; then cp -r website/static/charts /tmp/results-data/ 2>/dev/null || true; fi
+
+          # Switch to results branch
+          git fetch origin results 2>/dev/null || echo "Results branch doesn't exist yet"
+
+          # Aggressively clean working directory to avoid checkout conflicts
+          git add -A
+          git reset --hard HEAD
+          git clean -fdx
+
+          # Handle results branch carefully to avoid main branch contamination
+          if git show-ref --verify --quiet refs/remotes/origin/results; then
+            # Remote results branch exists - check if it's clean (results-only)
+            git checkout --orphan temp-check
+            git rm -rf . 2>/dev/null || true
+            git fetch origin results:temp-results
+            git checkout temp-results
+
+            # Check if this branch has main branch files (contamination check)
+            if [ -f ".github/README.md" ] || [ -f "package.json" ]; then
+              echo "🧹 Results branch appears contaminated with main branch files, creating clean branch"
+              git checkout --orphan results
+              git rm -rf . 2>/dev/null || true
+            else
+              echo "✅ Results branch looks clean, using existing branch"
+              git branch -D results 2>/dev/null || true
+              git branch -m temp-results results
+            fi
+            git branch -D temp-check 2>/dev/null || true
+          else
+            # No remote results branch exists, create new orphan branch
+            echo "🆕 Creating new results branch"
+            git checkout --orphan results
+            git rm -rf . 2>/dev/null || true
+          fi
+
+          # Set up directory structure
+          mkdir -p raw summary charts stats
+
+          # Copy files from temporary location to organized structure
+          if [ -d "/tmp/results-data/benchmark-results" ]; then cp -r /tmp/results-data/benchmark-results/* raw/ 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/summary.json" ]; then cp /tmp/results-data/results/summary.json "summary/summary-${TIMESTAMP}.json" 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/summary.tsv" ]; then cp /tmp/results-data/results/summary.tsv "summary/summary-${TIMESTAMP}.tsv" 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/summary.json" ]; then cp /tmp/results-data/results/summary.json summary/summary.json 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/summary.tsv" ]; then cp /tmp/results-data/results/summary.tsv summary/summary.tsv 2>/dev/null || true; fi
+          if [ -d "/tmp/results-data/charts" ]; then cp -r /tmp/results-data/charts/* charts/ 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/framework-stats.json" ]; then cp /tmp/results-data/results/framework-stats.json "stats/stats-${TIMESTAMP}.json" 2>/dev/null || true; fi
+          if [ -f "/tmp/results-data/results/framework-stats.json" ]; then cp /tmp/results-data/results/framework-stats.json stats/framework-stats.json 2>/dev/null || true; fi
+
+          # Commit and push results branch
+          if git add raw/ summary/ charts/ stats/ && ! git diff --staged --quiet; then
+            git commit -m "chore: update results from run #${{ github.event.workflow_run.run_number }} [${TIMESTAMP}]"
+            if git push --force-with-lease origin results; then
+              echo "✅ Results committed to results branch"
+            else
+              echo "⚠️ Failed to push results branch updates"
+            fi
+          else
+            echo "ℹ️ No changes to commit to results branch"
+          fi
+
+      - name: 📝 Commit to Main Branch
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          git config user.name "liss-bot"
+          git config user.email "alicia-gh-bot@mail.as93.net"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+
+          # Switch back to main branch
+          git checkout main
+
+          if [ "$COMMIT_TO_MAIN" = "true" ]; then
+            git add results/ website/static/chart*.json website/static/charts/ .github/README.md || true
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(results): update benchmark summaries from run #${{ github.event.workflow_run.run_number }}"
+              git push
+              echo "✅ Main branch updated"
+            else
+              echo "ℹ️ No changes to commit to main branch"
+            fi
+          else
+            echo "⏭️ Skipping main branch commit (commit_to_main=false)"
+          fi
+
+      - name: 🧹 Cleanup
+        if: always()
+        run: |
+          echo "🧹 Cleaning up temporary files..."
+          rm -rf ./downloaded-artifacts benchmark-results /tmp/results-branch
+          echo "✅ Cleanup complete"
