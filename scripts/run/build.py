@@ -75,6 +75,8 @@ def build_all(parallel: bool, framework: str, ci: bool, skip_website: bool, stat
                                 console.print("[green]✓ Website built successfully[/green]")
                             else:
                                 console.print("[red]✗ Website build failed[/red]")
+                                if ci:
+                                    sys.exit(1)
                     return
                 else:
                     console.print("[red]✗ Comparison build failed[/red]")
